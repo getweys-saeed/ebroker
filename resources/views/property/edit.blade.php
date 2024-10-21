@@ -344,13 +344,15 @@
                             @endif
                         </div>
 
+
                               {{-- Document Image --}}
                               <div class="col-md-3 col-sm-12 card">
                                 {{ Form::label('filepond_3d', __('Document Image'), ['class' => 'form-label col-12 ']) }}
                                 <input type="file" class="filepond" id="filepond_document" name="document">
                                 @if ($list->document)
                                     <div class="card1 document">
-                                        <img src="http://127.0.0.1:8000/images/property_document/{{ $list->document }}" alt="Image" class="card1-img" id="document">
+                                        <img src="{{ asset('images/property_document/' . $list->document) }}" alt="Image" class="card1-img" id="document">
+
                                     </div>
                                 @endif
                             </div>

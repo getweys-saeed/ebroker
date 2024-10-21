@@ -233,32 +233,33 @@
                 return '';
             }
         }
+
+        var baseImageUrl = "{{ asset('images/property_document/') }}";
+
         function imageFormatterDoc(value, row) {
-            // Define the base path for 3D images
+            // Log the value for debugging
+            console.log(value);
 
-           console.log(value);
+            // Ensure the row and document are valid
+            if (row && row.document) {
+                // Construct the full image URL using the base path from Blade
+                var imageUrl = baseImageUrl + '/' + row.document;
 
-            // console.log(value)
-            // console.log()
-            // Ensure the value is not null or empty
-            if (row) {
-                // Construct the full image path
-                var imageUrl = "http://127.0.0.1:8000/images/property_document/"+row.document;
-
-                // Check if the image is an SVG
+                // Check if the image is an SVG file
                 if (imageUrl.split('.').pop() === 'svg') {
-                    return '<embed class="svg-img" src="' + imageUrl + '">';
                     // For SVG, use the embed tag
+                    return '<embed class="svg-img" src="' + imageUrl + '">';
                 } else {
                     // For other image formats, use the img tag wrapped in an anchor for pop-up
                     return '<a class="image-popup-no-margins" href="' + imageUrl +
                         '"><img class="rounded avatar-md shadow img-fluid" alt="" src="' + imageUrl + '" width="55"></a>';
                 }
             } else {
-                // If no image, return an empty string
+                // If no image is available, return an empty string
                 return '';
             }
         }
+
 
         $(document).ready(function() {
 

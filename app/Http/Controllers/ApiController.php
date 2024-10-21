@@ -182,7 +182,7 @@ class ApiController extends Controller
                 if (!$request->type == 0) {
                     $saveCustomer->email = isset($request->email) ? $request->email : '';
                 } else {
-                    $saveCustomer->email = null;
+                    $saveCustomer->email = '';
                 }
                 $saveCustomer->mobile = isset($request->mobile) ? $request->mobile : '';
                 $saveCustomer->slug_id = generateUniqueSlug($request->name, 5);
@@ -326,9 +326,9 @@ class ApiController extends Controller
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
-                'status' => 'error',
+                'error' => false,
                 'message' => $validator->errors(),
-            ], 400); // 400 Bad Request
+            ], 200); // 400 Bad Request
         }
 
         // Get the request data
@@ -343,17 +343,18 @@ class ApiController extends Controller
         // If user exists, return the user details
         if ($user) {
             return response()->json([
-                'status' => 'success',
+                'error' => false,
                 'message' => 'User found.',
-                'data' => $user, // You can customize the returned fields if needed
+                'data' => [$user], // You can customize the returned fields if needed
             ], 200); // 200 OK
         }
 
         // If no user found, return an error message
         return response()->json([
-            'status' => 'error',
+            'error' => false,
             'message' => 'User not found.',
-        ], 404); // 404 Not Found
+            'data' => []
+        ], 200); // 404 Not Found
     }
 
 
