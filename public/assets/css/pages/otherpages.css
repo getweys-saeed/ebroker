@@ -2029,6 +2029,8 @@
 
   .total_customer {
       position: relative;
+      display: flex;
+
       width: 100%;
       height: 100%;
       padding: 24px;
@@ -2078,6 +2080,7 @@
       position: relative;
       width: 100%;
       height: 100%;
+      display: flex;
       padding: 24px;
       background-color: white;
       overflow: hidden;
@@ -2157,6 +2160,7 @@
       position: relative;
       width: 100%;
       height: 100%;
+      display: flex;
       padding: 24px;
       background-color: white;
       overflow: hidden;
@@ -2204,6 +2208,7 @@
       position: relative;
       width: 100%;
       height: 100%;
+      display: flex;
       padding: 24px;
       background-color: white;
       overflow: hidden;
@@ -2385,10 +2390,10 @@
   }
 
   .card_info {
-      margin-top: 68px;
+      /* margin-top: 68px;
       position: relative;
       top: 43px;
-      bottom: 20px;
+      bottom: 20px; */
   }
 
   .thead-dark {

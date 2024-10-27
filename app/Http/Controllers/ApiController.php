@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 use DateTime;
 use Illuminate\Support\Facades\Hash;
-use Exception;
+// use Exception;
 use Carbon\Carbon;
 use App\Models\Type;
 use App\Models\User;
 use App\Models\Chats;
 use App\Models\Slider;
 use Illuminate\Support\Facades\Log;
+use App\Models\Otp;
+use App\Mail\SendOtpMail;
+use Illuminate\Support\Facades\Mail;
 
 use GuzzleHttp\Client;
 use App\Models\Article;
@@ -63,6 +68,10 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class ApiController extends Controller
 {
+
+
+
+
 
     //* START :: get_system_settings   *//
     public function get_system_settings(Request $request)
@@ -1043,10 +1052,91 @@ class ApiController extends Controller
         }
         return response()->json($response);
     }
-
     //* END :: post_property   *//
+
+
+    //otp send //
+    public function send_otp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+        do {
+            $otp = rand(100000, 999999);
+            $exists = Otp::where('otp_code', $otp)->exists();
+        } while ($exists);
+
+        $message = 'Your OTP code is: ' . $otp;
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'saeedmoto3@gmail.com';
+            $mail->Password = 'ulng jmaf kyoe wkki';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom('saeedmoto3@gmail.com', 'Your Name');
+            $mail->addAddress($request->email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Your OTP Code';
+            $mail->Body    = $message;
+
+            $mail->send();
+            $otpRecord = Otp::where('otp_email', $request->email)->first();
+
+            if ($otpRecord) {
+                $otpRecord->otp_code = $otp;
+                $otpRecord->updated_at = now();
+                $otpRecord->save();
+            } else {
+                $otpRecord = new Otp();
+                $otpRecord->otp_email = $request->email;
+                $otpRecord->otp_code = $otp;
+                $otpRecord->created_at = now();
+                $otpRecord->updated_at = now();
+                $otpRecord->save();
+            }
+            return response()->json(['error' => false, 'message' => 'OTP sent to email and saved in the OTP record.']);
+        } catch (Exception $e) {
+            return response()->json(['error' => true, 'message' => 'Message could not be sent. Mailer Error: ' . $mail->ErrorInfo], 500);
+        }
+    }
+
+
+
+    // Verify Otp Start //
+
+    public function verifyOtp(Request $request)
+    {
+        // Validate input
+        $request->validate([
+
+            'otp' => 'required|digits:6',
+        ]);
+
+        // Find the OTP record for the email
+        $otpRecord = Otp::where('otp_code', $request->otp)
+            ->first();
+
+        if ($otpRecord) {
+            // OTP matched, delete it from the database
+            $otpRecord->delete();
+
+            return response()->json(['message' => 'OTP verified successfully.']);
+        } else {
+            // OTP did not match
+            return response()->json(['error' => false, 'message' => 'Invalid OTP.'], 200);
+        }
+    }
+
+
+    // Verify Otp End //
+
     //* START :: update_post_property   *//
-    /// This api use for update and delete  property
     public function update_post_property(Request $request)
     {
         $validator = Validator::make($request->all(), [

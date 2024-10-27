@@ -119,13 +119,9 @@ class Property extends Model
 
     public function getProperyTypeAttribute($value){
         if ($value == 0) {
-            return "sell";
+            return 0;
         } elseif ($value == 1) {
-            return "rent";
-        } elseif ($value == 2) {
-            return "sold";
-        } elseif ($value == 3) {
-            return "rented";
+            return 1;
         }
     }
 

@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-    {{ __('Property') }}
+    {{ __('InActive Property') }}
 @endsection
 
 @section('page-title')
@@ -71,7 +71,7 @@
                 <div class="row">
                     <div class="col-12">
                         <table class="table table-striped" id="table_list" data-toggle="table"
-                            data-url="{{ url('getPropertyList') }}" data-click-to-select="true"
+                            data-url="{{ url('getPropertyListInactive') }}" data-click-to-select="true"
                             data-side-pagination="server" data-pagination="true"
                             data-page-list="[5, 10, 20, 50, 100, 200,All]" data-search="true" data-search-align="right"
                             data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true"
@@ -97,7 +97,8 @@
                                         data-align="center" data-sortable="true"> {{ __('Type') }}</th>
                                     <th scope="col" data-field="document" data-sortable="false" data-align="center"
                                         data-formatter="imageFormatterDoc">{{ __('Document Image') }}</th>
-
+                                    <th scope="col" data-field="status" data-align="center" data-sortable="false">
+                                        {{ __('Status') }}</th>
                                     <th scope="col" data-field="title_image" data-formatter="imageFormatter"
                                         data-align="center" data-sortable="false"> {{ __('Image') }}</th>
                                     <th scope="col" data-field="3d_image" data-formatter="imageFormatter3D"
@@ -109,7 +110,7 @@
                                         data-width="5%" data-formatter="enableDisableSwitchFormatter">
                                         {{ __('Enable/Disable') }}</th>
                                     <th scope="col" data-field="featured_property"
-                                    data-align="center" data-formatter="propertyFeatureFormatter" data-sortable="false"> {{ __('Is Featured') }}</th>
+                                    data-align="center" data-sortable="false"> {{ __('Is Featured') }}</th>
                                     <th scope="col" data-field="is_premium" data-formatter="premium_status_switch"
                                         data-align="center" data-sortable="false"> {{ __('Private/Public') }}</th>
                                     @if (has_permissions('update', 'property_inquiry'))
@@ -188,26 +189,14 @@
         </div>
     </div>
 
-
 @endsection
 
 @section('script')
     <script>
-       function propertyFeatureFormatter(value,row) {
-    // console.log(row.featured_property);
-
-    if ( row.featured_property == 0 ) {
-        return '<div class="sell_type btn btn-sm btn-secondary fw-bold">UnFeatured</div>';
-    } else if ( row.featured_property == 1 ) {
-        return '<div class="rent_type btn btn-sm btn-danger fw-bold">Featured</div>';
-    }
-}
-
         $('#status').on('change', function() {
             $('#table_list').bootstrapTable('refresh');
 
         });
-
 
         $('#filter_category').on('change', function() {
             $('#table_list').bootstrapTable('refresh');

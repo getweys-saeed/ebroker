@@ -13,7 +13,6 @@
         "guzzlehttp/guzzle": "^7.2",
         "kornrunner/blurhash": "^1.2",
         "laravel/framework": "^10.0",
-
         "laravel/sanctum": "^3.3",
         "laravel/telescope": "^5.1",
         "laravel/tinker": "^2.7",
@@ -21,6 +20,7 @@
         "laravelcollective/html": "^6.3",
         "opcodesio/log-viewer": "^3.10",
         "php-webdriver/webdriver": "^1.14",
+        "phpmailer/phpmailer": "^6.9",
         "razorpay/razorpay": "2.*",
         "spatie/image": "^2.2",
         "stripe/stripe-php": "^14.9",

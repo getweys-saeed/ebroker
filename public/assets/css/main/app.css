@@ -403,8 +403,8 @@ screen and (-ms-high-contrast: active) {
     --bs-gray-700: #495057;
     --bs-gray-800: #343a40;
     --bs-gray-900: #212529;
-    --bs-primary: #087C7C;
-    --bs-secondary: #6c757d;
+    --bs-primary: #7A143B !important;
+    --bs-secondary: #EAE6E7 !important;
     --bs-success: #198754;
     --bs-info: #0dcaf0;
     --bs-warning: #ffc107;
@@ -20820,7 +20820,7 @@ body .bi:before {
 
 .card {
     border: none;
-    margin-bottom: 2.2rem;
+    margin-bottom: 1.65rem;
 }
 
 .card.card-statistic {
@@ -21540,6 +21540,7 @@ body .bi:before {
     align-items: center;
     border-radius: 0.5rem;
     color: #4D5454;
+
     display: block;
     display: flex;
     font-size: 1rem;
@@ -21564,11 +21565,21 @@ body .bi:before {
 .sidebar-wrapper .menu .sidebar-link:hover {
     background-color: #f0f1f5;
 }
+#table_list tbody tr td {
+    height: 40px;
+    overflow-y: auto;
+    white-space: nowrap;
+}
+
 
 .sidebar-wrapper .menu .sidebar-item {
     list-style: none;
     margin-top: 0.5rem;
     position: relative;
+}
+
+.sidebar-item.active{
+    color: white !important;
 }
 
 .sidebar-wrapper .menu .sidebar-item.has-sub .sidebar-link:after {
@@ -21584,7 +21595,19 @@ body .bi:before {
     content: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><path style="fill:none;stroke:%23fff;stroke-width:1" d="m6 9 6 6 6-6"/></svg>');
 }
 
+
+.sidebar-item.has-sub.active > a {
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+}
+
+.sidebar-item.has-sub:has(.submenu.active) {
+    background-color: #f3f3f3; /* Change background color */
+    border-radius: 10px; /* Apply border radius */
+}
+
 .sidebar-wrapper .menu .sidebar-item.active>.sidebar-link {
+
     background-color: var(--bs-primary);
 }
 
@@ -21603,6 +21626,8 @@ body .bi:before {
 }
 
 .sidebar-wrapper .menu .submenu {
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
     display: none;
     list-style: none;
     overflow: hidden;
@@ -21612,7 +21637,20 @@ body .bi:before {
 .sidebar-wrapper .menu .submenu.active {
     display: block;
     max-height: 999px;
+    background-color: #f3f3f3 !important;
+    border-radius: 13px;
+    margin: 0px;
 }
+
+.has-sub .submenu.active {
+    display: block;
+    max-height: 999px;
+    margin-top: 2px;
+    background-color: #f3f3f3 !important;
+
+    border-radius: 13px;
+}
+
 
 .sidebar-wrapper .menu .submenu .submenu-item.active {
     position: relative;

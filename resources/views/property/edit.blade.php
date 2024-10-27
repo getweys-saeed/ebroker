@@ -42,10 +42,11 @@
                 <hr>
 
                 {{-- Category --}}
-                <div class="card-body" style="height: 549px;">
+                <div class="card-body" style="height: 615px;">
                     <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('category', __('Category'), ['class' => 'form-label col-12 ']) }}
-                        <select name="category" class="choosen-select form-select form-control-sm" data-parsley-minSelect='1' id="category" required='true'>
+                        <select name="category" class="choosen-select form-select form-control-sm"
+                            data-parsley-minSelect='1' id="category" required='true'>
                             <option value="">{{ __('Choose Category') }}</option>
                             @foreach ($category as $row)
                                 <option value="{{ $row->id }}"
@@ -67,43 +68,71 @@
                         {{ Form::label('description', __('Description'), ['class' => 'form-label col-12 ']) }}
                         {{ Form::textarea('description', isset($list->description) ? $list->description : '', ['class' => 'form-control mb-3', 'rows' => '3', 'id' => '', 'required' => 'true', 'placeholder' => __('Description')]) }}
                     </div>
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('featured_property', __('Featured Property'), ['class' => 'form-label col-12']) }}
+                        <div class="form-check">
+                            {{ Form::checkbox('featured_property', 1, old('featured_property', isset($list->featured_property) ? $list->featured_property : false), ['class' => 'form-check-input', 'id' => 'featured_property']) }}
+                            <label class="form-check-label" for="featured_property">{{ __('Featured Property') }}</label>
+                        </div>
+                    </div>
+                    {{-- <p> {{ $list }}s</p> --}}
 
                     {{-- Property Type --}}
-                    <div class="col-md-12 col-12  form-group  mandatory">
-                        <div class="row">
-                            {{ Form::label('', __('Property Type'), ['class' => 'form-label col-12 ']) }}
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('property_type', __('Property Type'), ['class' => 'form-label col-12']) }}
+                        <div class="row ps-3 ">
 
-                            {{-- For Sell --}}
-                            <div class="col-md-6">
-                                {{ Form::radio('property_type', 0, null, ['class' => 'form-check-input', 'id' => 'property_type', 'required' => true, isset($list->propery_type) && $list->getRawOriginal('propery_type') == 0 ? 'checked' : '']) }}
-                                {{ Form::label('property_type', __('For Sell'), ['class' => 'form-check-label']) }}
+                            <div class="form-check col-md-4 col-sm-12">
+                                {{ Form::radio('property_type', 0, old('property_type', $list->propery_type) == 0, ['class' => 'form-check-input', 'id' => 'commercial']) }}
+                                <label class="form-check-label" for="commercial">{{ __('Commercial') }}</label>
                             </div>
 
-                            {{-- For Rent --}}
-                            <div class="col-md-6">
-                                {{ Form::radio('property_type', 1, null, ['class' => 'form-check-input', 'id' => 'property_type', 'required' => true, isset($list->propery_type) && $list->getRawOriginal('propery_type') == 1 ? 'checked' : '']) }}
-                                {{ Form::label('property_type', __('For Rent'), ['class' => 'form-check-label']) }}
+                            <div class="form-check col-md-4 col-sm-12">
+                                {{ Form::radio('property_type', 1, old('property_type', $list->propery_type) == 1, ['class' => 'form-check-input', 'id' => 'residential']) }}
+                                <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
                             </div>
                         </div>
                     </div>
 
 
-                    {{-- When Rent Selected Then Show Duration For Price --}}
-                    <div class="col-md-12 col-12 form-group mandatory" id='duration'>
+
+
+                    {{-- Duration --}}
+                    {{-- {{$list->rentduration}} --}}
+                    <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('Duration', __('Duration For Price'), ['class' => 'form-label col-12 ']) }}
-                        <select name="price_duration" id="price_duration"class="choosen-select form-select form-control-sm" data-parsley-minSelect='1'>
-                            <option value="Daily" {{ $list->rentduration == 'Daily' ? 'selected' : '' }}> {{ __('Daily') }} </option>
-                            <option value="Monthly" {{ $list->rentduration == 'Monthly' ? 'selected' : '' }}> {{ __('Monthly') }} </option>
-                            <option value="Yearly" {{ $list->rentduration == 'Yearly' ? 'selected' : '' }}> {{ __('Yearly') }} </option>
-                            <option value="Quarterly" {{ $list->rentduration == 'Quarterly' ? 'selected' : '' }}> {{ __('Quarterly') }} </option>
+                        <select name="price_duration" id="price_duration" class="choosen-select form-select form-control-sm"
+                            data-parsley-minSelect='1'>
+                            <option value="Daily"
+                                {{ old('price_duration', $list->rentduration ?? '') == 'Daily' ? 'selected' : '' }}>Daily
+                            </option>
+                            <option value="Monthly"
+                                {{ old('price_duration', $list->rentduration ?? '') == 'Monthly' ? 'selected' : '' }}>
+                                Monthly</option>
+                            <option value="Yearly"
+                                {{ old('price_duration', $list->rentduration ?? '') == 'Yearly' ? 'selected' : '' }}>
+                                Yearly</option>
+                            <option value="Quarterly"
+                                {{ old('price_duration', $list->rentduration ?? '') == 'Quarterly' ? 'selected' : '' }}>
+                                Quarterly</option>
                         </select>
                     </div>
 
                     {{-- Price --}}
-                    <div class="control-label col-12 form-group mandatory">
+                    <div class="control-label col-12 form-group mt-2 mandatory">
                         {{ Form::label('price', __('Price') . '(' . $currency_symbol . ')', ['class' => 'form-label col-12 ']) }}
-                        {{ Form::number('price', isset($list->price) ? $list->price : '', ['class' => 'form-control ', 'placeholder' => __('Price'), 'required' => 'true', 'min' => '1', 'id' => 'price']) }}
+                        {{ Form::number('price', old('price', $list->price), [
+                            'class' => 'form-control mt-1',
+                            'placeholder' => __('Price'),
+                            'required' => 'true',
+                            'min' => '1',
+                            'id' => 'price',
+                            'max' => '1000000000000',
+                        ]) }}
                     </div>
+
+
+
                 </div>
             </div>
         </div>
@@ -117,7 +146,10 @@
                     {{-- Meta Title --}}
                     <div class="col-md-6 col-sm-12 form-group">
                         {{ Form::label('title', __('Meta Title'), ['class' => 'form-label text-center']) }}
-                        <textarea id="edit_meta_title" name="edit_meta_title" class="form-control" oninput="getWordCount('edit_meta_title','edit_meta_title_count','12.9px arial')" rows="2" {{ system_setting('seo_settings') != '' && system_setting('seo_settings') == 1 ? 'required' : '' }} style="height: 75px" placeholder="{{ __('Meta Title') }}">{{ $list->meta_title }}</textarea>
+                        <textarea id="edit_meta_title" name="edit_meta_title" class="form-control"
+                            oninput="getWordCount('edit_meta_title','edit_meta_title_count','12.9px arial')" rows="2"
+                            {{ system_setting('seo_settings') != '' && system_setting('seo_settings') == 1 ? 'required' : '' }}
+                            style="height: 75px" placeholder="{{ __('Meta Title') }}">{{ $list->meta_title }}</textarea>
                         <br>
                         <h6 id="edit_meta_title_count">0</h6>
                     </div>
@@ -129,7 +161,7 @@
                     </div>
 
                     {{-- Meta Image Show --}}
-                    @if($list->meta_image != "")
+                    @if ($list->meta_image != '')
                         <div class="col-md-2 col-sm-12 text-center">
                             <img src="{{ $list->meta_image }}" alt="" height="100px" width="100px">
                         </div>
@@ -138,7 +170,9 @@
                     {{-- Meta Description --}}
                     <div class="col-md-12 col-sm-12 form-group">
                         {{ Form::label('description', __('Meta Description'), ['class' => 'form-label text-center']) }}
-                        <textarea id="edit_meta_description" name="edit_meta_description" class="form-control" oninput="getWordCount('edit_meta_description','edit_meta_description_count','12.9px arial')" rows="3" placeholder="{{ __('Meta Description') }}">{{ $list->meta_description }}</textarea>
+                        <textarea id="edit_meta_description" name="edit_meta_description" class="form-control"
+                            oninput="getWordCount('edit_meta_description','edit_meta_description_count','12.9px arial')" rows="3"
+                            placeholder="{{ __('Meta Description') }}">{{ $list->meta_description }}</textarea>
                         <br>
                         <h6 id="edit_meta_description_count">0</h6>
                     </div>
@@ -191,8 +225,9 @@
 
                             {{-- DropDown --}}
                             @if ($res->type_of_parameter == 'dropdown')
-                                <select name="{{ 'par_' . $res->id }}" class="choosen-select form-select form-control-sm" selected=false false name={{ $res->id }}>
-                                    <option value="">{{__('Select Option')}}</option>
+                                <select name="{{ 'par_' . $res->id }}" class="choosen-select form-select form-control-sm"
+                                    selected=false false name={{ $res->id }}>
+                                    <option value="">{{ __('Select Option') }}</option>
                                     @foreach ($res->type_values as $key => $value)
                                         <option value="{{ $value }}"
                                             {{ $res->assigned_parameter && $res->assigned_parameter->value == $value ? ' selected=selected' : '' }}>
@@ -204,40 +239,52 @@
                             {{-- Radio Button --}}
                             @if ($res->type_of_parameter == 'radiobutton')
                                 @foreach ($res->type_values as $key => $value)
-                                    <input type="radio" name="{{ 'par_' . $res->id }}" id="" value={{ $value }} class="form-check-input" {{ $res->assigned_parameter && $res->assigned_parameter->value == $value ? 'checked' : '' }}>
+                                    <input type="radio" name="{{ 'par_' . $res->id }}" id=""
+                                        value={{ $value }} class="form-check-input"
+                                        {{ $res->assigned_parameter && $res->assigned_parameter->value == $value ? 'checked' : '' }}>
                                     {{ $value }}
                                 @endforeach
                             @endif
 
                             {{-- Number --}}
                             @if ($res->type_of_parameter == 'number')
-                                <input type="number" name="{{ 'par_' . $res->id }}" id="" class="form-control" value="{{ $res->assigned_parameter  && $res->assigned_parameter != 'null' ? $res->assigned_parameter->value : '' }}">
+                                <input type="number" name="{{ 'par_' . $res->id }}" id=""
+                                    class="form-control"
+                                    value="{{ $res->assigned_parameter && $res->assigned_parameter != 'null' ? $res->assigned_parameter->value : '' }}">
                             @endif
 
                             {{-- TextBox --}}
                             @if ($res->type_of_parameter == 'textbox')
-                                <input type="text" name="{{ 'par_' . $res->id }}" id="" class="form-control" value="{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}">
+                                <input type="text" name="{{ 'par_' . $res->id }}" id=""
+                                    class="form-control"
+                                    value="{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}">
                             @endif
 
                             {{-- TextArea --}}
                             @if ($res->type_of_parameter == 'textarea')
-                                <textarea name="{{ 'par_' . $res->id }}" id="" class="form-control" cols="30" rows="3" value="{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}">{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}</textarea>
+                                <textarea name="{{ 'par_' . $res->id }}" id="" class="form-control" cols="30" rows="3"
+                                    value="{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}">{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}</textarea>
                             @endif
 
                             {{-- CheckBox --}}
                             @if ($res->type_of_parameter == 'checkbox')
                                 @foreach ($res->type_values as $key => $value)
-                                    <input type="checkbox" name="{{ 'par_' . $res->id . '[]' }}" id="" class="form-check-input" value={{ $value }} {{ !empty($res->assigned_parameter->value) && in_array($value, $res->assigned_parameter->value) ? 'Checked' : '' }}>{{ $value }}
+                                    <input type="checkbox" name="{{ 'par_' . $res->id . '[]' }}" id=""
+                                        class="form-check-input" value={{ $value }}
+                                        {{ !empty($res->assigned_parameter->value) && in_array($value, $res->assigned_parameter->value) ? 'Checked' : '' }}>{{ $value }}
                                 @endforeach
                             @endif
 
                             {{-- FILE --}}
                             @if ($res->type_of_parameter == 'file')
                                 @if (!empty($res->assigned_parameter->value))
-                                    <a href="{{ url('') . config('global.IMG_PATH') . config('global.PARAMETER_IMG_PATH') . '/' . $res->assigned_parameter->value }}" class="text-center col-12" style="text-align: center"> Click here to View</a> OR
+                                    <a href="{{ url('') . config('global.IMG_PATH') . config('global.PARAMETER_IMG_PATH') . '/' . $res->assigned_parameter->value }}"
+                                        class="text-center col-12" style="text-align: center"> Click here to View</a> OR
                                 @endif
-                                <input type="hidden" name="{{ 'par_' . $res->id }}" value="{{ $res->assigned_parameter ? $res->assigned_parameter->value : '' }}">
-                                <input type="file" class='form-control' name="{{ 'par_' . $res->id }}" id='edit_param_img'>
+                                <input type="hidden" name="{{ 'par_' . $res->id }}"
+                                    value="{{ $res->assigned_parameter ? $res->assigned_parameter->value : '' }}">
+                                <input type="file" class='form-control' name="{{ 'par_' . $res->id }}"
+                                    id='edit_param_img'>
                             @endif
                         </div>
                         {{-- @endforeach --}}
@@ -268,7 +315,9 @@
                                 <div class="col-md-12 col-12 form-group mandatory">
                                     {{ Form::label('city', __('City'), ['class' => 'form-label col-12 ']) }}
                                     {!! Form::hidden('city', isset($list->city) ? $list->city : '', ['class' => 'form-control ', 'id' => 'city']) !!}
-                                    <input id="searchInput" value="{{ isset($list->city) ? $list->city : '' }}"  class="controls form-control" type="text" placeholder="{{ __('City') }}" required>
+                                    <input id="searchInput" value="{{ isset($list->city) ? $list->city : '' }}"
+                                        class="controls form-control" type="text" placeholder="{{ __('City') }}"
+                                        required>
                                     {{-- {{ Form::text('city', isset($list->city) ? $list->city : '', ['class' => 'form-control ', 'placeholder' => 'City', 'id' => 'city']) }} --}}
                                 </div>
 
@@ -288,19 +337,33 @@
                                 {{-- Latitude --}}
                                 <div class="col-md-6 form-group mandatory">
                                     {{ Form::label('latitude', __('Latitude'), ['class' => 'form-label col-12 ']) }}
-                                    {!! Form::text('latitude', isset($list->latitude) ? $list->latitude : '', ['class' => 'form-control ', 'id' => 'latitude', 'step' => 'any', 'readonly' => true, 'required' => true, 'placeholder' => trans('Latitude')]) !!}
+                                    {!! Form::text('latitude', isset($list->latitude) ? $list->latitude : '', [
+                                        'class' => 'form-control ',
+                                        'id' => 'latitude',
+                                        'step' => 'any',
+                                        'readonly' => true,
+                                        'required' => true,
+                                        'placeholder' => trans('Latitude'),
+                                    ]) !!}
                                 </div>
 
                                 {{-- Longitude --}}
                                 <div class="col-md-6 form-group  mandatory">
                                     {{ Form::label('longitude', __('Longitude'), ['class' => 'form-label col-12 ']) }}
-                                    {!! Form::text('longitude', isset($list->longitude) ? $list->longitude : '', ['class' => 'form-control ', 'id' => 'longitude', 'step' => 'any', 'readonly' => true, 'required' => true, 'placeholder' => trans('Longitude')]) !!}
+                                    {!! Form::text('longitude', isset($list->longitude) ? $list->longitude : '', [
+                                        'class' => 'form-control ',
+                                        'id' => 'longitude',
+                                        'step' => 'any',
+                                        'readonly' => true,
+                                        'required' => true,
+                                        'placeholder' => trans('Longitude'),
+                                    ]) !!}
                                 </div>
 
                                 {{-- Client Address --}}
                                 <div class="col-md-12 col-12 form-group mandatory">
                                     {{ Form::label('address', __('Client Address'), ['class' => 'form-label col-12 ']) }}
-                                    {{ Form::textarea('client_address', isset($list->client_address) ? $list->client_address : (system_setting('company_address') ?? ""), ['class' => 'form-control ', 'placeholder' => trans('Client Address'), 'rows' => '4', 'id' => 'client-address', 'autocomplete' => 'off', 'required' => 'true']) }}
+                                    {{ Form::textarea('client_address', isset($list->client_address) ? $list->client_address : system_setting('company_address') ?? '', ['class' => 'form-control ', 'placeholder' => trans('Client Address'), 'rows' => '4', 'id' => 'client-address', 'autocomplete' => 'off', 'required' => 'true']) }}
                                 </div>
 
                                 {{-- Address --}}
@@ -325,7 +388,8 @@
                         {{-- Title Image --}}
                         <div class="col-md-3 col-sm-12 form-group mandatory card title_card">
                             {{ Form::label('filepond_title', __('Title Image'), ['class' => 'form-label col-12 ']) }}
-                            <input type="file" class="filepond" id="filepond_title" name="title_image" {{ $list->title_image == '' ? 'required' : '' }} accept="image/png,image/jpg,image/jpeg">
+                            <input type="file" class="filepond" id="filepond_title" name="title_image"
+                                {{ $list->title_image == '' ? 'required' : '' }} accept="image/png,image/jpg,image/jpeg">
                             @if ($list->title_image)
                                 <div class="card1 title_img">
                                     <img src="{{ $list->title_image }}" alt="Image" class="card1-img">
@@ -339,23 +403,25 @@
                             <input type="file" class="filepond" id="filepond_3d" name="3d_image">
                             @if ($list->three_d_image)
                                 <div class="card1 3d_img">
-                                    <img src="{{ $list->three_d_image }}" alt="Image" class="card1-img" id="3d_img">
+                                    <img src="{{ $list->three_d_image }}" alt="Image" class="card1-img"
+                                        id="3d_img">
                                 </div>
                             @endif
                         </div>
 
 
-                              {{-- Document Image --}}
-                              <div class="col-md-3 col-sm-12 card">
-                                {{ Form::label('filepond_3d', __('Document Image'), ['class' => 'form-label col-12 ']) }}
-                                <input type="file" class="filepond" id="filepond_document" name="document">
-                                @if ($list->document)
-                                    <div class="card1 document">
-                                        <img src="{{ asset('images/property_document/' . $list->document) }}" alt="Image" class="card1-img" id="document">
+                        {{-- Document Image --}}
+                        <div class="col-md-3 col-sm-12 card">
+                            {{ Form::label('filepond_3d', __('Document Image'), ['class' => 'form-label col-12 ']) }}
+                            <input type="file" class="filepond" id="filepond_document" name="document">
+                            @if ($list->document)
+                                <div class="card1 document">
+                                    <img src="{{ asset('images/property_document/' . $list->document) }}" alt="Image"
+                                        class="card1-img" id="document">
 
-                                    </div>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
+                        </div>
 
                         {{-- Gallary Images --}}
                         <div class="col-md-3 col-sm-12 ">
@@ -399,8 +465,11 @@
                     <div class="col-sm-12 col-md-12  col-xs-12 d-flex">
                         <label class="col-sm-1 form-check-label mandatory mt-3 ">{{ __('Is Private?') }}</label>
                         <div class="form-check form-switch mt-3">
-                            <input type="hidden" name="is_premium" id="is_premium" value=" {{ $list->is_premium ? 1 : 0 }}">
-                            <input class="form-check-input" type="checkbox" role="switch" {{ $list->is_premium ? 'checked' : '' }} id="is_premium_switch">
+
+                            <input type="hidden" name="is_premium" id="is_premium"
+                                value=" {{ $list->is_premium ? 1 : 0 }}">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                {{ $list->is_premium ? 'checked' : '' }} id="is_premium_switch">
                         </div>
                     </div>
                 </div>

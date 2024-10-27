@@ -75,57 +75,54 @@
                         ]) }}
                     </div>
 
-                    {{-- Property Type --}}
-                    <div class="col-md-12 col-12  form-group  mandatory">
-                        <div class="row">
-                            {{ Form::label('', __('Property Type'), ['class' => 'form-label col-12 ']) }}
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('property_type', __('Property Type'), ['class' => 'form-label col-12']) }}
 
-                            {{-- For Sell --}}
-                            <div class="col-md-6">
-                                {{ Form::radio('property_type', 0, null, [
-                                    'class' => 'form-check-input',
-                                    'id' => 'property_type',
-                                    'required' => true,
-                                    'checked' => true
-                                ]) }}
-                                {{ Form::label('property_type', __('For Sell'), ['class' => 'form-check-label']) }}
-                            </div>
-                            {{-- For Rent --}}
-                            <div class="col-md-6">
-                                {{ Form::radio('property_type', 1, null, [
-                                    'class' => 'form-check-input',
-                                    'id' => 'property_type',
-                                    'required' => true,
-                                ]) }}
-                                {{ Form::label('property_type', __('For Rent'), ['class' => 'form-check-label']) }}
+                        <div class="form-check">
+                            {{ Form::radio('property_type', 0, (isset($list->property_type) && $list->property_type == 0), ['class' => 'form-check-input', 'id' => 'commercial']) }}
+                            <label class="form-check-label" for="commercial">{{ __('Commercial') }}</label>
+                        </div>
 
-                            </div>
+                        <div class="form-check">
+                            {{ Form::radio('property_type', 1, (isset($list->property_type) && $list->property_type == 1), ['class' => 'form-check-input', 'id' => 'residential']) }}
+                            <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
                         </div>
                     </div>
 
+
                     {{-- Duration --}}
-                    <div class="col-md-12 col-12 form-group mandatory" id='duration'>
+                    <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('Duration', __('Duration For Price'), ['class' => 'form-label col-12 ']) }}
                         <select name="price_duration" id="price_duration" class="choosen-select form-select form-control-sm" data-parsley-minSelect='1'>
-                            <option value="Daily">Daily</option>
-                            <option value="Monthly">Monthly</option>
-                            <option value="Yearly">Yearly</option>
-                            <option value="Quarterly">Quarterly</option>
+                            <option value="Daily" {{ old('price_duration', $item->price_duration ?? '') == 'Daily' ? 'selected' : '' }}>Daily</option>
+                            <option value="Monthly" {{ old('price_duration', $item->price_duration ?? '') == 'Monthly' ? 'selected' : '' }}>Monthly</option>
+                            <option value="Yearly" {{ old('price_duration', $item->price_duration ?? '') == 'Yearly' ? 'selected' : '' }}>Yearly</option>
+                            <option value="Quarterly" {{ old('price_duration', $item->price_duration ?? '') == 'Quarterly' ? 'selected' : '' }}>Quarterly</option>
                         </select>
                     </div>
+
 
                     {{-- Price --}}
                     <div class="control-label col-12 form-group mt-2 mandatory">
                         {{ Form::label('price', __('Price') . '(' . $currency_symbol . ')', ['class' => 'form-label col-12 ']) }}
-                        {{ Form::number('price', '', [
-                            'class' => 'form-control mt-1 ',
-                            'placeholder' => trans('Price'),
+                        {{ Form::number('price', $list->price ?? '', [
+                            'class' => 'form-control mt-1',
+                            'placeholder' => __('Price'),
                             'required' => 'true',
                             'min' => '1',
                             'id' => 'price',
                             'max' => '1000000000000'
                         ]) }}
                     </div>
+
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('featured_property', __('Featured Property'), ['class' => 'form-label col-12']) }}
+                        <div class="form-check">
+                            {{ Form::checkbox('featured_property', 1, isset($list->featured_property) ? $list->featured_property : false, ['class' => 'form-check-input', 'id' => 'featured_property']) }}
+                            <label class="form-check-label" for="featured_property">{{ __('Featured Property') }}</label>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

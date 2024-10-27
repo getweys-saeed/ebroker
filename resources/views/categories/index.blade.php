@@ -75,20 +75,22 @@
                             {{-- Meta Title --}}
                             <div class="col-md-4 col-sm-12 form-group">
                                 {{ Form::label('title', __('Meta Title'), ['class' => 'form-label text-center']) }}
-                                <input type="text" name="meta_title" class="form-control" id="meta_title" oninput="getWordCount('meta_title','meta_title_count','19.9px arial')" placeholder="{{ __('Meta Title') }}">
+                                <input type="text" name="meta_title" class="form-control mb-2" id="meta_title" oninput="getWordCount('meta_title','meta_title_count','19.9px arial')" placeholder="{{ __('Meta Title') }}">
                                 <h6 id="meta_title_count">0</h6>
                             </div>
 
                             {{-- Meta Keywords --}}
                             <div class="col-md-4 col-sm-12 form-group">
                                 {{ Form::label('title', __('Meta Keywords'), ['class' => 'form-label text-center']) }}
-                                <input type="text" name="meta_keywords" class="form-control" id="meta_keywords" placeholder="{{ __('Meta Keywords') }}">
+                                <input type="text" name="meta_keywords" class="form-control mb-2" id="meta_keywords" placeholder="{{ __('Meta Keywords') }}">
+                                <h6 id="meta_keywords fw-lighter">Use Comma
+                                    "<span class="text-danger">,</span>" Without White Space For Multiple Keywords</h6>
                             </div>
 
                             {{-- Meta Description --}}
                             <div class="col-md-4 col-sm-12 form-group">
                                 {{ Form::label('description', __('Meta Description'), ['class' => 'form-label text-center']) }}
-                                <textarea id="meta_description" name="meta_description" class="form-control" oninput="getWordCount('meta_description','meta_description_count','12.9px arial')" placeholder="{{ __('Meta Description') }}"></textarea>
+                                <textarea id="meta_description" name="meta_description" class="form-control mb-2" oninput="getWordCount('meta_description','meta_description_count','12.9px arial')" placeholder="{{ __('Meta Description') }}"></textarea>
                                 <h6 id="meta_description_count">0</h6>
                             </div>
 

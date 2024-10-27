@@ -19,6 +19,16 @@ class DocumentVerificationController extends Controller
         return view('document_verification.document_verification');
     }
 
+    public function activeDocument()
+    {
+        return view('document_verification.document_verified');
+    }
+
+    public function unactiveDocument()
+    {
+        return view('document_verification.document_unverified');
+    }
+
     /**
      * Update the specified resource in storage.
      *
@@ -72,7 +82,90 @@ class DocumentVerificationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
      */
+
     public function customerdocument(Request $request)
+    {
+        $offset = $request->input('offset', 0);
+        $limit = $request->input('limit', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'ASC');
+        $status = null;
+
+        // Fetch customers with non-null documents
+        $query = Customer::whereNotNull('user_document')->orderBy($sort, $order);
+
+        // Apply search filter if any
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $search = $request->input('search');
+                $q->where('id', 'LIKE', "%$search%")
+                    ->orWhere('email', 'LIKE', "%$search%")
+                    ->orWhere('name', 'LIKE', "%$search%")
+                    ->orWhere('mobile', 'LIKE', "%$search%");
+            });
+        }
+        if (isset($_GET['status']) && $_GET['status'] !== '') {
+            $status = $_GET['status'];
+        }
+
+        if ($status !== null) {
+            $query = $query->where('doc_verification_status', $status);
+        }
+
+
+        // Pagination
+        $total = $query->count();
+        $customers = $query->skip($offset)->take($limit)->get();
+
+        // Format response data
+        $rows = $this->formatCustomerData($customers);
+
+        // Prepare the data response for AJAX
+        $bulkData = [
+            'total' => $total,
+            'rows' => $rows,
+        ];
+
+        return $request->wantsJson() ? response()->json($bulkData) : view('document_verification.document_verification', ['customers' => $customers]);
+    }
+    public function verifiedDocument(Request $request)
+    {
+        $offset = $request->input('offset', 0);
+        $limit = $request->input('limit', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'ASC');
+
+        // Fetch customers with non-null documents
+        $query = Customer::whereNotNull('user_document')->where("doc_verification_status",1)->orderBy($sort, $order);
+
+        // Apply search filter if any
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $search = $request->input('search');
+                $q->where('id', 'LIKE', "%$search%")
+                    ->orWhere('email', 'LIKE', "%$search%")
+                    ->orWhere('name', 'LIKE', "%$search%")
+                    ->orWhere('mobile', 'LIKE', "%$search%");
+            });
+        }
+
+        // Pagination
+        $total = $query->count();
+        $customers = $query->skip($offset)->take($limit)->get();
+
+        // Format response data
+        $rows = $this->formatCustomerData($customers);
+
+        // Prepare the data response for AJAX
+        $bulkData = [
+            'total' => $total,
+            'rows' => $rows,
+        ];
+
+        return $request->wantsJson() ? response()->json($bulkData) : view('document_verification.document_verification', ['customers' => $customers]);
+    }
+
+    public function unverifiedDocument(Request $request)
     {
         $offset = $request->input('offset', 0);
         $limit = $request->input('limit', 10);
@@ -108,7 +201,6 @@ class DocumentVerificationController extends Controller
 
         return $request->wantsJson() ? response()->json($bulkData) : view('document_verification.document_verification', ['customers' => $customers]);
     }
-
     /**
      * Get FCM IDs for notifications.
      *
@@ -173,7 +265,7 @@ class DocumentVerificationController extends Controller
                 'mobile' => $customer->mobile,
                 'address' => $customer->address,
                 'doc_verification_status' => $customer->doc_verification_status,
-                'document_status' => $customer->doc_verification_status == 1 ? 'Verified' : '<span class="bg-danger p-2 rounded-1 text-light fw-bold">Unproved</span>',
+                'document_status' => $customer->doc_verification_status == 1 ? '<span class="btn btn-success btn-sm p-2 rounded-1 text-light fw-bold">Verified</span>' : '<span class="btn  btn-sm p-2 rounded-1 text-light fw-bold" style="background-color:#f75454">Unproved</span>',
             ];
         });
     }

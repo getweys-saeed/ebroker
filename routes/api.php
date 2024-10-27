@@ -37,6 +37,9 @@ Route::get('get_seo_settings', [ApiController::class, 'get_seo_settings']);
 Route::post('set_property_total_click', [ApiController::class, 'set_property_total_click']);
 Route::post('check_otp_verified', [ApiController::class, 'check_otp_verified']);
 
+Route::post('send_otp', [ApiController::class, 'send_otp']);
+
+Route::post('verify-otp', [ApiController::class, 'verifyOtp']);
 
 // Route::get('paypal', [ApiController::class, 'paypal']);
 // Route::get('paypal1', [ApiController::class, 'paypal']);

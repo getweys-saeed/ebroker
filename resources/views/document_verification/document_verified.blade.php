@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-    {{ __('Document Verification') }}
+    {{ __('Verified Document') }}
 @endsection
 
 @section('page-title')
@@ -21,20 +21,10 @@
 <section class="section">
     <div class="card">
         <div class="card-body">
-            <div class="row" id="toolbar">
-                {{-- Filter Status --}}
-                <div class=" col-12">
-                    <select id="statusCus" class="form-select ">
-                        <option value="" selected disabled>{{ __('Select Status') }}</option>
-                        <option value="0">{{ __('Unverified') }}</option>
-                        <option value="1">{{ __('Verified') }}</option>
-                    </select>
-                </div>
-            </div>
             <div class="row">
                 <div class="col-12">
                     <table class="table table-striped" id="table_list" data-toggle="table"
-                        data-url="{{ url('document-verification') }}" data-click-to-select="true"
+                        data-url="{{ url('verified-document') }}" data-click-to-select="true"
                         data-side-pagination="server" data-pagination="true"
                         data-page-list="[5, 10, 20, 50, 100, 200, All]" data-search="true" data-toolbar="#toolbar"
                         data-show-columns="true" data-show-refresh="true" data-trim-on-search="false"
@@ -85,25 +75,9 @@
                 order: p.order,
                 offset: p.offset,
                 limit: p.limit,
-                search: p.search,
-                status: $('#statusCus').val()
-
+                search: p.search
             };
         }
-        $('#statusCus').on('change', function() {
-            $('#table_list').bootstrapTable('refresh');
-        });
-
-        $(document).ready(function() {
-            var params = new URLSearchParams(window.location.search);
-            var statusParam = params.get('status');
-            console.log("Retrieved status from URL:", statusParam); // Debug log
-            if (statusParam !== null && statusParam !== '') {
-                $('#statusCus').val(statusParam).trigger('change');
-            }
-        });
-
-
 
         // Function to handle the switch state change
         function chk(checkbox) {

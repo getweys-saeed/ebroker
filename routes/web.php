@@ -29,6 +29,8 @@ use App\Http\Controllers\AdvertisementController;
 use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\OutdoorFacilityController;
 use App\Http\Controllers\PropertysInquiryController;
+use App\Models\Customer;
+use App\Models\Property;
 
 /*
 |--------------------------------------------------------------------------
@@ -145,8 +147,52 @@ Route::middleware(['language'])->group(function () {
         /// START :: PAYMENT ROUTE
 
         Route::resource('customer', CustomersController::class);
+
+        Route::post('/bulk-delete', [CustomersController::class, 'bulkDelete'])->name('customer.bulkDelete');
+
         Route::get('customerList', [CustomersController::class, 'customerList']);
+
+
+        Route::get('verifiedUser', [CustomersController::class, 'verifiedUser']);
+        Route::get('customerListVerified', [CustomersController::class, 'customerListVerified']);
+
+        Route::get('unverifiedUser', [CustomersController::class, 'unverifiedUser']);
+        Route::get('customerListUnverified', [CustomersController::class, 'customerListUnverified']);
+
         Route::post('customerstatus', [CustomersController::class, 'update'])->name('customer.customerstatus');
+
+        // In routes/web.php
+
+        // Route For Notification
+        // In routes/web.php
+
+
+        Route::post('/clear-notifications', function () {
+            // Update all unseen notifications to seen
+            \App\Models\Customer::where('notification_seen', 0)->whereNotNull('user_document')->update(['notification_seen' => 1]);
+
+            // Return a success response
+            return response()->json(['status' => 'success']);
+        })->name('clear.notifications');
+        // routes/web.php
+
+        Route::get('/notifications/count', function () {
+            $unseenCount = \App\Models\Customer::where('notification_seen', 0)->whereNotNull('user_document')->count();
+            return response()->json(['count' => $unseenCount]);
+        })->name('notifications.count');
+
+      // Route to fetch notification count
+      Route::get('/property/notifications/count', function () {
+        $unseenCountProperty = Property::where('notification_seen', 0)->count();
+        return response()->json(['count' => $unseenCountProperty]);
+    })->name('property.notifications.count');
+
+    // Clear notifications
+    Route::post('/property/clear-notifications', function () {
+        Property::where('notification_seen', 0)->update(['notification_seen' => 1]);
+        return response()->json(['status' => 'success']);
+    })->name('clear.property.notifications');
+
         /// END :: CUSTOMER ROUTE
 
         /// START :: SLIDER ROUTE
@@ -221,26 +267,42 @@ Route::middleware(['language'])->group(function () {
 
 
 
- /// START :: DOCUMENTATION VERIFICATION ROUTE
- Route::resource('document-Verification', DocumentVerificationController::class);
+        /// START :: DOCUMENTATION VERIFICATION ROUTE
+        Route::resource('document-Verification', DocumentVerificationController::class);
 
- // Custom routes for additional methods
- Route::get('document-verification', [DocumentVerificationController::class, 'customerdocument']);
- Route::post('document-verification-update', [DocumentVerificationController::class, 'update'])->name('document.document_status');
+        // Custom routes for additional methods
+        Route::get('document-verification', [DocumentVerificationController::class, 'customerdocument']);
 
-  /// END :: DOCUMENTATION VERIFICATION ROUTE
+        //verified
+        Route::get('activeDocument', [DocumentVerificationController::class, 'activeDocument']);
+        Route::get('verified-document', [DocumentVerificationController::class, 'verifiedDocument']);
+        //unverified
+        Route::get('unactiveDocument', [DocumentVerificationController::class, 'unactiveDocument']);
+        Route::get('unverified-document', [DocumentVerificationController::class, 'unverifiedDocument']);
+
+
+        Route::post('document-verification-update', [DocumentVerificationController::class, 'update'])->name('document.document_status');
+
+        /// END :: DOCUMENTATION VERIFICATION ROUTE
 
 
 
         /// START :: PROPERTY ROUTE
         Route::resource('property', PropertController::class);
         Route::get('getPropertyList', [PropertController::class, 'getPropertyList']);
+
+        Route::get('activeProperty', [PropertController::class, 'activeProperty'])->name("activeProperty");
+        Route::get('getPropertyListActive', [PropertController::class, 'getPropertyListActive'])->name("getPropertyListActive");
+
+        Route::get('inactiveProperty', [PropertController::class, 'inactiveProperty'])->name("inactiveProperty");
+        Route::get('getPropertyListInactive', [PropertController::class, 'getPropertyListInactive'])->name("getPropertyListInactive");
+
         Route::post('updatepropertystatus', [PropertController::class, 'updateStatus'])->name('updatepropertystatus');
         Route::post('property-gallery', [PropertController::class, 'removeGalleryImage'])->name('property.removeGalleryImage');
         Route::get('get-state-by-country', [PropertController::class, 'getStatesByCountry'])->name('property.getStatesByCountry');
         Route::get('property-destory/{id}', [PropertController::class, 'destroy'])->name('property.destroy');
         Route::get('getFeaturedPropertyList', [PropertController::class, 'getFeaturedPropertyList']);
-                Route::post('updateaccessability', [PropertController::class, 'updateaccessability'])->name('updateaccessability');
+        Route::post('updateaccessability', [PropertController::class, 'updateaccessability'])->name('updateaccessability');
 
         Route::get('updateFCMID', [UserController::class, 'updateFCMID']);
         /// END :: PROPERTY ROUTE
@@ -293,7 +355,6 @@ Route::middleware(['language'])->group(function () {
         Route::get('calculator', function () {
             return view('Calculator.calculator');
         });
-
     });
 });
 
@@ -306,7 +367,7 @@ Route::get('/js/lang', static function () {
         $files = resource_path('lang/' . $lang . '.json');
         return File::get($files);
     });
-    echo('window.trans = ' . $labels);
+    echo ('window.trans = ' . $labels);
     exit();
 })->name('assets.lang');
 
@@ -332,7 +393,7 @@ Route::get('/clear', function () {
     return redirect()->back();
 });
 
-Route::get('/add-url', function(){
+Route::get('/add-url', function () {
     $envUpdates = [
         'APP_URL' => Request::root(),
     ];

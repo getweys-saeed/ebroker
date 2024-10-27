@@ -16,14 +16,14 @@ $lang = Session::get('language');
     <div class="row">
         <div class="col-md-4 col-sm-12">
             <div class="row">
-                <div class="col-md-6 col-sm-6">
+                <div class="col-md-12 col-sm-12">
                     <a href="{{ url('customer') }}">
 
-                    <div class="card h-100">
+                    <div class="card ">
                         <div class="total_customer">
                             <div class="curtain">
                             </div>
-                            <div class="svg_icon">
+                            <div class="svg_icon me-4">
                                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <g id="total_user">
@@ -54,14 +54,14 @@ $lang = Session::get('language');
                     </div>
                     </a>
                 </div>
-                <div class="col-md-6 col-sm-6">
+                <div class="col-md-12 col-sm-12">
                                         <a href="{{ url('property') }}">
 
-                    <div class="card h-100">
+                    <div class="card ">
                         <div class="total_properties">
                             <div class="curtain">
                             </div>
-                            <div class="svg_icon">
+                            <div class="svg_icon me-4">
                                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <g id="all_properties">
@@ -91,14 +91,14 @@ $lang = Session::get('language');
                 </div>
             </div>
             <div class="row mt-3">
-                <div class="col-md-6 col-sm-6">
+                <div class="col-md-12 col-sm-12">
                                         <a href="{{ url('property') . '?type=0' }}">
 
-                    <div class="card h-100">
+                    <div class="card ">
                         <div class="properties_for_sale">
                             <div class="curtain">
                             </div>
-                            <div class="svg_icon">
+                            <div class="svg_icon me-4">
                                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <g id="sale_home">
@@ -127,7 +127,7 @@ $lang = Session::get('language');
                                 </svg>
                             </div>
                             <div class="card_info">
-                                <div class="total_number mt-5">
+                                <div class="total_number ">
                                     {{ $list['total_sell_property'] }}
                                 </div>
 
@@ -139,14 +139,14 @@ $lang = Session::get('language');
                     </div>
                     </a>
                 </div>
-                <div class="col-md-6 col-sm-6">
+                <div class="col-md-12 col-sm-12">
                                         <a href="{{ url('property') . '?type=1' }}">
 
-                    <div class="card h-100">
+                    <div class="card ">
                         <div class="properties_for_rent">
                             <div class="curtain">
                             </div>
-                            <div class="svg_icon">
+                            <div class="svg_icon me-4">
                                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <g id="rent_home">
@@ -171,7 +171,7 @@ $lang = Session::get('language');
                                 </svg>
                             </div>
                             <div class="card_info">
-                                <div class="total_number mt-5">
+                                <div class="total_number ">
                                     {{ $list['total_rant_property'] }}
                                 </div>
 
@@ -208,7 +208,7 @@ $lang = Session::get('language');
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row d-flex">
+                    <div class="row d-flex gap-5">
                         <div class="col-md-3 lable_sell d-flex">
 
                             <div class="svg_icon">
