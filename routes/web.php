@@ -181,17 +181,17 @@ Route::middleware(['language'])->group(function () {
             return response()->json(['count' => $unseenCount]);
         })->name('notifications.count');
 
-      // Route to fetch notification count
-      Route::get('/property/notifications/count', function () {
-        $unseenCountProperty = Property::where('notification_seen', 0)->count();
-        return response()->json(['count' => $unseenCountProperty]);
-    })->name('property.notifications.count');
+        // Route to fetch notification count
+        Route::get('/property/notifications/count', function () {
+            $unseenCountProperty = Property::where('notification_seen', 0)->count();
+            return response()->json(['count' => $unseenCountProperty]);
+        })->name('property.notifications.count');
 
-    // Clear notifications
-    Route::post('/property/clear-notifications', function () {
-        Property::where('notification_seen', 0)->update(['notification_seen' => 1]);
-        return response()->json(['status' => 'success']);
-    })->name('clear.property.notifications');
+        // Clear notifications
+        Route::post('/property/clear-notifications', function () {
+            Property::where('notification_seen', 0)->update(['notification_seen' => 1]);
+            return response()->json(['status' => 'success']);
+        })->name('clear.property.notifications');
 
         /// END :: CUSTOMER ROUTE
 
@@ -288,6 +288,7 @@ Route::middleware(['language'])->group(function () {
 
 
         /// START :: PROPERTY ROUTE
+        Route::get('property/export/', [PropertController::class, 'export']);
         Route::resource('property', PropertController::class);
         Route::get('getPropertyList', [PropertController::class, 'getPropertyList']);
 

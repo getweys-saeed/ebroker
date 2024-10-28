@@ -8,6 +8,8 @@ use App\Models\AssignParameters;
 use App\Models\Category;
 use App\Models\Chats;
 use App\Models\Customer;
+use App\Exports\PropertyExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 use App\Models\Notifications;
@@ -1151,6 +1153,12 @@ class PropertController extends Controller
             $category = Category::all();
             return view('property.inactive_property', compact('category'));
         }
+    }
+
+
+    public function export()
+    {
+        return Excel::download(new PropertyExport, 'users.csv');
     }
 
 }

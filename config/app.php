@@ -199,6 +199,8 @@ return [
         App\Providers\RouteServiceProvider::class,
         Collective\Html\HtmlServiceProvider::class,
         App\Providers\ViewServiceProvider::class,
+
+
     ],
 
     /*
@@ -216,6 +218,9 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
         'Debugbar' => 'Barryvdh\Debugbar\Facade',
         'Paystack' => Unicodeveloper\Paystack\Facades\Paystack::class,
+
+
+
     ])->toArray(),
 
 ];
