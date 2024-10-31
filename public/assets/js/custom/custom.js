@@ -206,18 +206,13 @@ function confirmationDelete(e) {
 function chk(checkbox) {
     console.log(checkbox.getAttribute('data-url'));
     if (checkbox.checked) {
-
         active(event.target.id, 1, checkbox.getAttribute('data-url'));
-
     } else {
-
         active(event.target.id, 0, checkbox.getAttribute('data-url'));
     }
 }
 
-
 function active(id, value, url) {
-
     $.ajax({
         url: url,
         type: "POST",
@@ -227,28 +222,38 @@ function active(id, value, url) {
             "status": value,
         },
         cache: false,
-        success: function (result) {
-
+        success: function(result) {
             if (result.error == false) {
+
                 Toastify({
                     text: result.message,
                     duration: 6000,
-                    close: !0,
+                    close: true,
                     backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)"
                 }).showToast();
                 $('#table_list').bootstrapTable('refresh');
             } else {
+
                 Toastify({
-                    text: "Something Went Wrong",
+                    text: result.message || "Something went wrong.",
                     duration: 6000,
-                    close: !0,
+                    close: true,
                     backgroundColor: '#dc3545'
                 }).showToast();
                 $('#table_list').bootstrapTable('refresh');
             }
         },
-        error: function (error) {
+        error: function(xhr, status, error) {
+            // Log the error message and response
+            console.error("AJAX Error:", status, error);
+            console.error("Server Response:", xhr.responseText);
 
+            Toastify({
+                text: "Error: " + (xhr.responseJSON?.message || "Unable to update the status."),
+                duration: 6000,
+                close: true,
+                backgroundColor: '#dc3545'
+            }).showToast();
         }
     });
 }

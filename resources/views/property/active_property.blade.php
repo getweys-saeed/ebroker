@@ -37,7 +37,7 @@
             <div class="card-body">
                 <div class="row" id="toolbar">
                     {{-- Filter Category --}}
-                    <div class="col-sm-4">
+                    <div class="col-sm-6">
                         <select class="form-select form-control-sm" id="filter_category">
                             <option value="">{{ __('Select Category') }}</option>
                             @if (isset($category))
@@ -47,16 +47,9 @@
                             @endif
                         </select>
                     </div>
+
                     {{-- Filter Status --}}
-                    <div class="col-sm-4">
-                        <select id="status" class="form-select form-control-sm">
-                            <option value="">{{ __('Select Status') }} </option>
-                            <option value="0">{{ __('InActive') }}</option>
-                            <option value="1">{{ __('Active') }}</option>
-                        </select>
-                    </div>
-                    {{-- Filter Status --}}
-                    <div class="col-sm-4">
+                    <div class="col-sm-6">
                         <select id="property-type-filter" class="form-select form-control-sm">
                             <option value="">{{ __('Select Type') }} </option>
                             <option value="0">{{ __('Sale') }}</option>
@@ -93,12 +86,11 @@
                                         {{ __('Address') }}</th>
                                     <th scope="col" data-field="category.category" data-align="center"
                                         data-sortable="true"> {{ __('Category') }}</th>
-                                    <th scope="col" data-field="propery_type" data-formatter="propertyTypeFormatter"
+                                        <th scope="col" data-field="propery_type" data-formatter="propertyTypeFormatter"
                                         data-align="center" data-sortable="true"> {{ __('Type') }}</th>
                                     <th scope="col" data-field="document" data-sortable="false" data-align="center"
                                         data-formatter="imageFormatterDoc">{{ __('Document Image') }}</th>
-                                    <th scope="col" data-field="status" data-align="center" data-sortable="false">
-                                        {{ __('Status') }}</th>
+
                                     <th scope="col" data-field="title_image" data-formatter="imageFormatter"
                                         data-align="center" data-sortable="false"> {{ __('Image') }}</th>
                                     <th scope="col" data-field="3d_image" data-formatter="imageFormatter3D"
@@ -109,8 +101,9 @@
                                     <th scope="col" data-field="status" data-sortable="false" data-align="center"
                                         data-width="5%" data-formatter="enableDisableSwitchFormatter">
                                         {{ __('Enable/Disable') }}</th>
-                                    <th scope="col" data-field="featured_property"
-                                    data-align="center" data-sortable="false"> {{ __('Is Featured') }}</th>
+                                        <th scope="col" data-field="featured_property" data-align="center"
+                                        data-formatter="enableDisableFeatureSwitchFormatter" data-sortable="false">
+                                        {{ __('Is Featured') }}</th>
                                     <th scope="col" data-field="is_premium" data-formatter="premium_status_switch"
                                         data-align="center" data-sortable="false"> {{ __('Private/Public') }}</th>
                                     @if (has_permissions('update', 'property_inquiry'))
@@ -207,6 +200,16 @@
 
         });
 
+        function propertyFeatureFormatter(value, row) {
+            // console.log(row.featured_property);
+
+            if (row.featured_property == 0) {
+                return '<div class="sell_type btn btn-sm btn-secondary fw-bold">UnFeatured</div>';
+            } else if (row.featured_property == 1) {
+                return '<div class="rent_type btn btn-sm btn-danger fw-bold">Featured</div>';
+            }
+        }
+
 
         // Function to show modal with document image
         function showImageModal(imageUrl) {
@@ -216,7 +219,7 @@
 
         function imageFormatter3D(value, row) {
             // Define the base path for 3D images
-     
+
 
             // console.log(value)
             // console.log()
@@ -288,7 +291,7 @@
                 offset: p.offset,
                 limit: p.limit,
                 search: p.search,
-                status: $('#status').val(),
+
                 category: $('#filter_category').val(),
                 property_type: $('#property-type-filter').val()
             };

@@ -146,7 +146,11 @@ Route::middleware(['language'])->group(function () {
 
         /// START :: PAYMENT ROUTE
 
+        Route::get('customer/export/', [CustomersController::class, 'export']);
         Route::resource('customer', CustomersController::class);
+
+
+        Route::post('/bulk-customer-update', [CustomersController::class, 'bulkUpdate'])->name('customer.BulkUpdate');
 
         Route::post('/bulk-delete', [CustomersController::class, 'bulkDelete'])->name('customer.bulkDelete');
 
@@ -280,16 +284,22 @@ Route::middleware(['language'])->group(function () {
         Route::get('unactiveDocument', [DocumentVerificationController::class, 'unactiveDocument']);
         Route::get('unverified-document', [DocumentVerificationController::class, 'unverifiedDocument']);
 
+        Route::post('/bulk-update', [DocumentVerificationController::class, 'bulkUpdate'])->name('document.bulkUpdate');
 
         Route::post('document-verification-update', [DocumentVerificationController::class, 'update'])->name('document.document_status');
+        Route::get('document/export/', [DocumentVerificationController::class, 'export']);
+
 
         /// END :: DOCUMENTATION VERIFICATION ROUTE
 
 
 
         /// START :: PROPERTY ROUTE
-        Route::get('property/export/', [PropertController::class, 'export']);
+
         Route::resource('property', PropertController::class);
+
+        Route::post('/bulk-property-update', [PropertController::class, 'bulkUpdateStatus'])->name('property.BulkUpdate');
+
         Route::get('getPropertyList', [PropertController::class, 'getPropertyList']);
 
         Route::get('activeProperty', [PropertController::class, 'activeProperty'])->name("activeProperty");
@@ -299,6 +309,8 @@ Route::middleware(['language'])->group(function () {
         Route::get('getPropertyListInactive', [PropertController::class, 'getPropertyListInactive'])->name("getPropertyListInactive");
 
         Route::post('updatepropertystatus', [PropertController::class, 'updateStatus'])->name('updatepropertystatus');
+        Route::post('updatepropertyfeaturestatus', [PropertController::class, 'updateFeatureStatus'])->name('updatepropertyfeaturestatus');
+        Route::get('export/property/', [PropertController::class, 'export']);
         Route::post('property-gallery', [PropertController::class, 'removeGalleryImage'])->name('property.removeGalleryImage');
         Route::get('get-state-by-country', [PropertController::class, 'getStatesByCountry'])->name('property.getStatesByCountry');
         Route::get('property-destory/{id}', [PropertController::class, 'destroy'])->name('property.destroy');

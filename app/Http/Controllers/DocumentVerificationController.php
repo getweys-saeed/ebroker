@@ -8,6 +8,8 @@ use App\Services\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Exports\DocumentExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DocumentVerificationController extends Controller
 {
@@ -282,4 +284,91 @@ class DocumentVerificationController extends Controller
     {
         return env('DEMO_MODE') && Auth::user()->email != 'superadmin@gmail.com' ? '****************************' : $data;
     }
+
+
+    public function bulkUpdate(Request $request)
+    {
+        // Check permissions for updating customers
+        if (!has_permissions('update', 'customer')) {
+            return response()->json([
+                'success' => false,
+                'message' => PERMISSION_ERROR_MSG,
+            ]);
+        }
+
+        // Extract action and IDs from the request
+        $action = $request->action;
+        $ids = $request->ids;
+
+        // Validate action
+        if ($action == 'activate' || $action == 'deactivate') {
+            $status = $action == 'activate' ? 1 : 0;
+
+            // Update the document verification status in bulk
+            Customer::whereIn('id', $ids)->update(['doc_verification_status' => $status]);
+
+            // Prepare for FCM notification if needed
+            foreach ($ids as $id) {
+                $fcm_ids = [];
+                // Check if the customer has notifications enabled
+                $customer = Customer::where('id', $id)->where('notification', 1)->first();
+                if ($customer) {
+                    // Retrieve user tokens for the customer
+                    $user_tokens = Usertokens::where('customer_id', $id)->pluck('fcm_id')->toArray();
+                    $fcm_ids = array_merge($fcm_ids, $user_tokens);
+                }
+
+                // Send notification if tokens are found
+                if (!empty($fcm_ids)) {
+                    $msg = $status == 1 ? 'Activated by Administrator' : 'Deactivated by Administrator';
+                    $type = $status == 1 ? 'account_activated' : 'account_deactivated';
+                    $full_msg = $status == 1 ? 'Your Account has been activated' : 'Your Account has been deactivated. Please contact the Administrator.';
+
+                    // Send the push notification
+                    $fcmMsg = [
+                        'title' => 'Account Status Update',
+                        'message' => $full_msg,
+                        'type' => $type,
+                        'body' => $msg,
+                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                        'sound' => 'default',
+                    ];
+
+                    // Ensure registration IDs are not empty
+                    if (!empty($fcm_ids)) {
+                        try {
+                            send_push_notification($fcm_ids, $fcmMsg);
+                        } catch (\Exception $e) {
+                            Log::error("Failed to send FCM notification for customer ID {$id}: " . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
+            // Return success response
+            return response()->json([
+                'success' => true,
+                'message' => $status ? 'Selected Documents have been activated.' : 'Selected Documents have been deactivated.',
+            ]);
+        }
+
+        // Return error for invalid action
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid action selected.',
+        ]);
+    }
+
+
+    public function export(Request $request)
+    {
+        $validated = $request->validate([
+            'start_month' => 'required|date',
+            'end_month' => 'required|date|after_or_equal:start_month',
+        ]);
+
+        return Excel::download(new DocumentExport($validated['start_month'], $validated['end_month']), 'user_document.csv');
+    }
+
+
 }

@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CustomerExport;
 use App\Models\Customer;
 use App\Models\Usertokens;
 use Illuminate\Http\Request;
 use App\Models\InterestedUser;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\PropertyExport;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomersController extends Controller
 {
@@ -47,43 +52,45 @@ class CustomersController extends Controller
     public function update(Request $request)
     {
         if (!has_permissions('update', 'customer')) {
-            $response['error'] = true;
-            $response['message'] = PERMISSION_ERROR_MSG;
-            return response()->json($response);
-        } else {
-            Customer::where('id', $request->id)->update(['isActive' => $request->status]);
-            $fcm_ids = array();
-
-            $customer_id = Customer::where(['id' => $request->id, 'notification' => 1])->count();
-            if ($customer_id) {
-                $user_token = Usertokens::where('customer_id', $request->id)->pluck('fcm_id')->toArray();
-                $fcm_ids[] = $user_token;
-            }
-
-
-            $msg = "";
-            if (!empty($fcm_ids)) {
-                $msg = $request->status == 1 ? 'Activate now by Adminstrator ' : 'Deactive now by Adminstrator ';
-                $type = $request->status == 1 ? 'account_activated' : 'account_deactivated';
-                $full_msg = $request->status == 1 ? 'Your Account' . $msg : 'Please Contact to Administrator';
-                $registrationIDs = $fcm_ids[0];
-
-                $fcmMsg = array(
-                    'title' =>  'Your Account' . $msg,
-                    'message' => $full_msg,
-                    'type' => $type,
-                    'body' => 'Your Account'  . $msg,
-                    'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                    'sound' => 'default',
-
-                );
-                send_push_notification($registrationIDs, $fcmMsg);
-            }
-
-            $response['error'] = false;
-            ResponseService::successResponse($request->status ? "Customer Activatd Successfully" : "Customer Deactivatd Successfully");
+            return response()->json(['error' => true, 'message' => PERMISSION_ERROR_MSG]);
         }
+
+        Customer::where('id', $request->id)->update(['isActive' => $request->status]);
+
+        $fcm_ids = [];
+        $customer_id = Customer::where(['id' => $request->id, 'notification' => 1])->count();
+        if ($customer_id) {
+            $user_token = Usertokens::where('customer_id', $request->id)->pluck('fcm_id')->toArray();
+            $fcm_ids[] = $user_token;
+        }
+
+        if (!empty($fcm_ids)) {
+            $msg = $request->status == 1 ? 'Activate now by Administrator ' : 'Deactivate now by Administrator ';
+            $type = $request->status == 1 ? 'account_activated' : 'account_deactivated';
+            $full_msg = $request->status == 1 ? 'Your Account ' . $msg : 'Please Contact Administrator';
+            $registrationIDs = $fcm_ids[0];
+
+            $fcmMsg = [
+                'title' => 'Your Account ' . $msg,
+                'message' => $full_msg,
+                'type' => $type,
+                'body' => 'Your Account ' . $msg,
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'sound' => 'default',
+            ];
+
+            try {
+                send_push_notification($registrationIDs, $fcmMsg);
+            } catch (\Exception $e) {
+                Log::error('Failed to send FCM notification: ' . $e->getMessage());
+            }
+        }
+
+        $statusMessage = $request->status ? "Customer Activated Successfully" : "Customer Deactivated Successfully";
+        return ResponseService::successResponse($statusMessage);
     }
+
+
 
 
     public function bulkDelete(Request $request)
@@ -95,14 +102,28 @@ class CustomersController extends Controller
         ]);
 
         try {
-            // Perform bulk deletion
-            Customer::whereIn('id', $request->ids)->delete();
+            // Retrieve all customers with the provided IDs
+            $customers = Customer::whereIn('id', $request->ids)->get();
+
+            foreach ($customers as $customer) {
+                // Retrieve the old document image
+                $oldImage = $customer->user_document;
+
+                // Remove the old image if it exists
+                if ($oldImage && file_exists(public_path('images') . config('global.USER_IMG_PATH') . $oldImage)) {
+                    unlink(public_path('images') . config('global.USER_IMG_PATH') . $oldImage);
+                }
+
+                // Delete the customer record
+                $customer->delete();
+            }
 
             return response()->json(['success' => true, 'message' => 'Records deleted successfully.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to delete records.']);
         }
     }
+
 
 
 
@@ -215,7 +236,7 @@ class CustomersController extends Controller
         }
 
 
-        $res = $sql->where("otp_verified", 1)->get();
+        $res = $sql->where("isActive", 1)->get();
 
         $bulkData = array();
         $bulkData['total'] = $total;
@@ -282,7 +303,7 @@ class CustomersController extends Controller
         }
 
 
-        $res = $sql->where("otp_verified", 0)->get();
+        $res = $sql->where("isActive", 0)->get();
 
         $bulkData = array();
         $bulkData['total'] = $total;
@@ -312,6 +333,101 @@ class CustomersController extends Controller
         // dd($bulkData);
         return response()->json($bulkData);
     }
+    public function bulkUpdate(Request $request)
+    {
+        // Check if the user has permission to update customer records
+        if (!has_permissions('update', 'customer')) {
+            return response()->json([
+                'success' => false,
+                'message' => PERMISSION_ERROR_MSG,
+            ]);
+        }
+
+        $action = $request->action;
+        $ids = $request->ids;
+
+        // Validate that $ids is an array
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No customer IDs provided or invalid format.',
+            ]);
+        }
+
+        // Handle bulk deletion
+        if ($action == 'delete') {
+            Customer::whereIn('id', $ids)->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected records have been deleted successfully.',
+            ]);
+        } elseif ($action == 'activate' || $action == 'deactivate') {
+            // Set status based on the action
+            $status = $action == 'activate' ? 1 : 0;
+
+            // Update the isActive status for selected customers
+            Customer::whereIn('id', $ids)->update(['isActive' => $status]);
+
+            // Prepare for FCM notifications
+            $fcm_ids = Usertokens::whereIn('customer_id', $ids)->pluck('fcm_id')->toArray();
+            Log::debug("Fetched FCM IDs: ", $fcm_ids); // Debugging line
+
+            // Ensure $fcm_ids is an array and not empty
+            if (is_array($fcm_ids) && !empty($fcm_ids)) {
+                $msg = $status == 1 ? 'Activated by Administrator' : 'Deactivated by Administrator';
+                $type = $status == 1 ? 'account_activated' : 'account_deactivated';
+                $full_msg = $status == 1 ? 'Your Account has been activated.' : 'Your Account has been deactivated. Please contact the Administrator.';
+
+                $fcmMsg = [
+                    'title' => 'Account Status Update',
+                    'message' => $full_msg,
+                    'type' => $type,
+                    'body' => $msg,
+                    'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                    'sound' => 'default',
+                ];
+
+                // Loop through each FCM ID and send notifications individually
+                foreach ($fcm_ids as $registrationID) {
+                    if (!empty($registrationID)) {
+                        try {
+                            // Send the push notification
+                            send_push_notification([$registrationID], $fcmMsg);
+                        } catch (\Exception $e) {
+                            // Log the error for debugging
+                            Log::error("Failed to send FCM notification for registration ID {$registrationID}: " . $e->getMessage());
+                        }
+                    } else {
+                        // Log or handle the case where registrationID is empty
+                        Log::warning("Empty FCM registration ID for customer ID: " . $registrationID);
+                    }
+                }
+            } else {
+                // Log that there are no valid FCM IDs to notify
+                Log::info("No valid FCM IDs found for the given customer IDs.");
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' =>$request->status ? "Customer Activatd Successfully" : "Customer Deactivatd Successfully"
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid action selected.',
+        ]);
+    }
 
 
+    public function export(Request $request)
+    {
+        // Validate the input data
+        $validated = $request->validate([
+            'start_month' => 'required|date',
+            'end_month' => 'required|date|after_or_equal:start_month',
+        ]);
+
+        return Excel::download(new CustomerExport($validated['start_month'], $validated['end_month']), 'customer.csv');
+    }
 }

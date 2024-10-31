@@ -68,7 +68,7 @@
 
                                     <a href="{{ url('verifiedUser') }}"
                                         class="ms-3 d-flex align-items-center justify-content-between px-3">
-                                        {{ __('Verified Customers') }}
+                                        {{ __('Active Customers') }}
                                         {{-- <span
                                         class="mx-2 rounded-circle badge bg-success text-white border border-success ">{{ $otpVerified }}</span> --}}
                                     </a>
@@ -78,7 +78,7 @@
                                 <li class="submenu-item">
                                     <a href="{{ url('unverifiedUser') }}"
                                         class="ms-3 d-flex align-items-center justify-content-between px-3">
-                                        {{ __('UnVerified Customers') }}
+                                        {{ __('InActive Customers') }}
 
                                         {{-- <span
                                         class="mx-2 rounded-circle badge bg-danger text-white border border-danger ">{{ $otpUnverified }}</span> --}}

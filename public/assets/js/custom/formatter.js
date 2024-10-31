@@ -13,11 +13,11 @@ function imageFormatter( value, row ) {
                 return '<embed class="svg-img" src="' + value + '">';
             } else {
                 console.log( value );
-                return '<a class="image-popup-no-margins" href="' + value + '"><img class="rounded avatar-md shadow img-fluid" alt="" src="' + value + '" width="45"></a>';
+                return '<a class="image-popup-no-margins" href="' + value + '"><img class="rounded avatar-md shadow img-fluid" alt="" src="' + value + '" width="40"></a>';
             }
         }
     } else {
-        return ( value !== '' ) ? '<a class="image-popup-no-margins" href="' + value + '"><img class="rounded avatar-md shadow " alt="" src="' + value + '" width="45"></a>' : '';
+        return ( value !== '' ) ? '<a class="image-popup-no-margins" href="' + value + '"><img class="rounded avatar-md shadow " alt="" src="' + value + '" width="40"></a>' : '';
     }
 
 
@@ -164,4 +164,50 @@ function enableDisableSwitchFormatter( value, row ) {
     return `<div class="form-check form-switch" style="padding-left: 5.2rem;">
                 <input class = "form-check-input switch1"id = "${row.id}" onclick = "chk(this);" data-url="${row.edit_status_url}" type="checkbox" role="switch" ${status} value="${value}">
             </div>`;
+}
+
+
+function enableDisableFeatureSwitchFormatter(value, row) {
+    let status = (value == 1) ? "checked" : "";
+    console.log(row.id);
+
+    return `<div class="form-check form-switch" style="padding-left: 5.2rem;">
+        <input class="form-check-input switch1"
+               id="${row.id}"
+               name="featured_property"
+               onclick="chkpro(this, ${row.id});"
+               data-url="updatepropertyfeaturestatus"
+               type="checkbox"
+               role="switch"
+               ${status}
+               value="${value}">
+    </div>`;
+}
+
+
+function chkpro(element, propertyId) {
+    let isFeatured = element.checked ? 1 : 0; // Set featured status based on checkbox state
+
+    $.ajax({
+        url: $(element).data('url'),
+        type: 'POST',
+        data: {
+            '_token': $('meta[name="csrf-token"]').attr('content'),
+            "id": parseInt(element.id),
+            "featured_property": isFeatured,
+        },
+
+        success: function(response) {
+            Toastify({
+                text: response.message,
+                duration: 6000,
+                close: true,
+                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)"
+            }).showToast();
+            $('#table_list').bootstrapTable('refresh');
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText); // log error response
+        }
+    });
 }

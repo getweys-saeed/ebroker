@@ -27,6 +27,7 @@ use App\Services\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class PropertController extends Controller
@@ -47,9 +48,7 @@ class PropertController extends Controller
     }
 
 
-    public function show(){
-
-    }
+    public function show() {}
     /**
      * Show the form for creating a new resource.
      *
@@ -526,21 +525,20 @@ class PropertController extends Controller
         if ($searchQuery !== null) {
             $sql = $sql->where(function ($query) use ($searchQuery) {
                 $query->where('id', 'LIKE', "%$searchQuery%")
-                      ->orWhere('title', 'LIKE', "%$searchQuery%")
-                      ->orWhere('address', 'LIKE', "%$searchQuery%")
-                      ->orWhereHas('category', function ($query) use ($searchQuery) {
-                          $query->where('category', 'LIKE', "%$searchQuery%");
-                      })
-                      ->orWhereHas('customer', function ($query) use ($searchQuery) {
-                          $query->where('name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('email', 'LIKE', "%$searchQuery%");
-                      });
+                    ->orWhere('title', 'LIKE', "%$searchQuery%")
+                    ->orWhere('address', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('category', function ($query) use ($searchQuery) {
+                        $query->where('category', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('customer', function ($query) use ($searchQuery) {
+                        $query->where('name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    });
             });
         }
 
         if ($propertyType !== null) {
             $sql = $sql->where('propery_type', $propertyType);
-
         }
 
         if ($status !== null) {
@@ -559,7 +557,7 @@ class PropertController extends Controller
             $sql = $sql->skip($offset)->take($limit);
         }
 
-        $sql->where('status','=',1);
+        $sql->where('status', '=', 1);
         // Fetch the data
         $res = $sql->get();
 
@@ -689,21 +687,20 @@ class PropertController extends Controller
         if ($searchQuery !== null) {
             $sql = $sql->where(function ($query) use ($searchQuery) {
                 $query->where('id', 'LIKE', "%$searchQuery%")
-                      ->orWhere('title', 'LIKE', "%$searchQuery%")
-                      ->orWhere('address', 'LIKE', "%$searchQuery%")
-                      ->orWhereHas('category', function ($query) use ($searchQuery) {
-                          $query->where('category', 'LIKE', "%$searchQuery%");
-                      })
-                      ->orWhereHas('customer', function ($query) use ($searchQuery) {
-                          $query->where('name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('email', 'LIKE', "%$searchQuery%");
-                      });
+                    ->orWhere('title', 'LIKE', "%$searchQuery%")
+                    ->orWhere('address', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('category', function ($query) use ($searchQuery) {
+                        $query->where('category', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('customer', function ($query) use ($searchQuery) {
+                        $query->where('name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    });
             });
         }
 
         if ($propertyType !== null) {
             $sql = $sql->where('propery_type', $propertyType);
-
         }
 
         if ($status !== null) {
@@ -722,7 +719,7 @@ class PropertController extends Controller
             $sql = $sql->skip($offset)->take($limit);
         }
 
-        $sql->where('status','=',0);
+        $sql->where('status', '=', 0);
         // Fetch the data
         $res = $sql->get();
 
@@ -852,21 +849,20 @@ class PropertController extends Controller
         if ($searchQuery !== null) {
             $sql = $sql->where(function ($query) use ($searchQuery) {
                 $query->where('id', 'LIKE', "%$searchQuery%")
-                      ->orWhere('title', 'LIKE', "%$searchQuery%")
-                      ->orWhere('address', 'LIKE', "%$searchQuery%")
-                      ->orWhereHas('category', function ($query) use ($searchQuery) {
-                          $query->where('category', 'LIKE', "%$searchQuery%");
-                      })
-                      ->orWhereHas('customer', function ($query) use ($searchQuery) {
-                          $query->where('name', 'LIKE', "%$searchQuery%")
-                                ->orWhere('email', 'LIKE', "%$searchQuery%");
-                      });
+                    ->orWhere('title', 'LIKE', "%$searchQuery%")
+                    ->orWhere('address', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('category', function ($query) use ($searchQuery) {
+                        $query->where('category', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('customer', function ($query) use ($searchQuery) {
+                        $query->where('name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    });
             });
         }
 
         if ($propertyType !== null) {
             $sql = $sql->where('propery_type', $propertyType);
-
         }
 
         if ($status !== null) {
@@ -951,6 +947,7 @@ class PropertController extends Controller
             }
 
             // Interested user details
+
             $tempRow['customer_ids'] = $interested_users;
             foreach ($row->interested_users as $interested_user) {
                 if ($interested_user->property_id == $row->id) {
@@ -969,66 +966,294 @@ class PropertController extends Controller
         return response()->json($bulkData);
     }
 
-
-
-
-
-    public function updateStatus(Request $request)
+    public function updateFeatureStatus(Request $request)
     {
+        // Check permissions
         if (!has_permissions('update', 'property')) {
-            $response['error'] = true;
-            $response['message'] = PERMISSION_ERROR_MSG;
-            return response()->json($response);
+            return response()->json([
+                'error' => true,
+                'message' => PERMISSION_ERROR_MSG
+            ]);
+        }
+
+        // Validate the request to ensure required data is provided
+        $request->validate([
+            'id' => 'required|exists:propertys,id',
+            'featured_property' => 'required|boolean'
+        ]);
+
+        $propertyId = intval($request->id);
+        $newStatus = $request->featured_property;
+
+        // Log debug info to confirm field and status values
+        Log::info("Updating featured_property with value: $newStatus for property ID: {$propertyId}");
+
+        // Update the featured_property field
+        $updated = Property::where('id', $propertyId)->update(['featured_property' => $request->featured_property]);
+
+        // Check if the update was successful
+        if ($updated) {
+            Log::info("Successfully updated featured_property for Property ID {$propertyId} to {$newStatus}");
+            return response()->json([
+                'error' => false,
+                'message' => $newStatus ? "Property Featured Successfully" : "Property Unfeatured Successfully"
+            ]);
         } else {
-            Property::where('id', $request->id)->update(['status' => $request->status]);
-            $Property = Property::with('customer')->find($request->id);
-
-            if (!empty($Property->customer)) {
-                if ($Property->customer->fcm_id != '' && $Property->customer->notification == 1) {
-
-                    $fcm_ids = array();
-
-                    $customer_id = Customer::where('id', $Property->customer->id)->where('isActive', '1')->where('notification', 1)->get();
-                    if (!empty($customer_id)) {
-                        $user_token = Usertokens::where('customer_id', $Property->customer->id)->pluck('fcm_id')->toArray();
-                    }
-
-                    $fcm_ids[] = $user_token;
-
-                    $msg = "";
-                    if (!empty($fcm_ids)) {
-                        $msg = $Property->status == 1 ? 'Activated now by Administrator ' : 'Deactivated now by Administrator ';
-                        $registrationIDs = $fcm_ids[0];
-
-                        $fcmMsg = array(
-                            'title' =>  $Property->name . 'Property Updated',
-                            'message' => 'Your Property Post ' . $msg,
-                            'type' => 'property_inquiry',
-                            'body' => 'Your Property Post ' . $msg,
-                            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                            'sound' => 'default',
-                            'id' => (string)$Property->id,
-
-                        );
-                        send_push_notification($registrationIDs, $fcmMsg);
-                    }
-                    //END ::  Send Notification To Customer
-
-                    Notifications::create([
-                        'title' => $Property->name . 'Property Updated',
-                        'message' => 'Your Property Post ' . $msg,
-                        'image' => '',
-                        'type' => '1',
-                        'send_type' => '0',
-                        'customers_id' => $Property->customer->id,
-                        'propertys_id' => $Property->id
-                    ]);
-                }
-            }
-            $response['error'] = false;
-            ResponseService::successResponse($request->status ? "Property Activatd Successfully" : "Property Deactivatd Successfully");
+            Log::error("Failed to update featured_property for Property ID {$propertyId}");
+            return response()->json([
+                'error' => true,
+                'message' => "Failed to update property feature status."
+            ]);
         }
     }
+
+
+
+
+    // public function updateStatus(Request $request)
+    // {
+    //     if (!has_permissions('update', 'property')) {
+    //         $response['error'] = true;
+    //         $response['message'] = PERMISSION_ERROR_MSG;
+    //         return response()->json($response);
+    //     } else {
+    //         Property::where('id', $request->id)->update(['status' => $request->status]);
+    //         $Property = Property::with('customer')->find($request->id);
+
+    //         if (!empty($Property->customer)) {
+    //             if ($Property->customer->fcm_id != '' && $Property->customer->notification == 1) {
+
+    //                 $fcm_ids = array();
+
+    //                 $customer_id = Customer::where('id', $Property->customer->id)->where('isActive', '1')->where('notification', 1)->get();
+    //                 if (!empty($customer_id)) {
+    //                     $user_token = Usertokens::where('customer_id', $Property->customer->id)->pluck('fcm_id')->toArray();
+    //                 }
+
+    //                 $fcm_ids[] = $user_token;
+
+    //                 $msg = "";
+    //                 if (!empty($fcm_ids)) {
+    //                     $msg = $Property->status == 1 ? 'Activated now by Administrator ' : 'Deactivated now by Administrator ';
+    //                     $registrationIDs = $fcm_ids[0];
+
+    //                     $fcmMsg = array(
+    //                         'title' =>  $Property->name . 'Property Updated',
+    //                         'message' => 'Your Property Post ' . $msg,
+    //                         'type' => 'property_inquiry',
+    //                         'body' => 'Your Property Post ' . $msg,
+    //                         'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+    //                         'sound' => 'default',
+    //                         'id' => (string)$Property->id,
+
+    //                     );
+    //                     send_push_notification($registrationIDs, $fcmMsg);
+    //                 }
+    //                 //END ::  Send Notification To Customer
+
+    //                 Notifications::create([
+    //                     'title' => $Property->name . 'Property Updated',
+    //                     'message' => 'Your Property Post ' . $msg,
+    //                     'image' => '',
+    //                     'type' => '1',
+    //                     'send_type' => '0',
+    //                     'customers_id' => $Property->customer->id,
+    //                     'propertys_id' => $Property->id
+    //                 ]);
+    //             }
+    //         }
+    //         $response['error'] = false;
+    //         ResponseService::successResponse($request->status ? "Property Activatd Successfully" : "Property Deactivatd Successfully");
+    //     }
+    // }
+    public function updateStatus(Request $request)
+    {
+        // Check permissions
+        if (!has_permissions('update', 'property')) {
+            return response()->json([
+                'error' => true,
+                'message' => PERMISSION_ERROR_MSG
+            ]);
+        }
+
+        // Update property status
+        Property::where('id', $request->id)->update(['status' => $request->status]);
+        $Property = Property::with('customer')->find($request->id);
+
+        // Initialize the $msg variable to ensure it's defined
+        $msg = '';
+
+        // Check if property has a customer linked
+        if (!empty($Property->customer)) {
+            // Ensure FCM ID is present and notifications are enabled for the customer
+            if ($Property->customer->fcm_id != '' && $Property->customer->notification == 1) {
+
+                // Prepare FCM IDs array
+                $fcm_ids = [];
+
+                // Get the customer's active tokens
+                $customer_id = Customer::where('id', $Property->customer->id)
+                    ->where('isActive', '1')
+                    ->where('notification', 1)
+                    ->exists(); // Use exists() for better performance
+
+                if ($customer_id) {
+                    $user_token = Usertokens::where('customer_id', $Property->customer->id)
+                        ->pluck('fcm_id')
+                        ->toArray();
+
+                    if (!empty($user_token)) {
+                        $fcm_ids = $user_token;
+                    }
+                }
+
+                // Send notification if tokens are found
+                if (!empty($fcm_ids)) {
+                    $msg = $Property->status == 1 ? 'Activated now by Administrator' : 'Deactivated now by Administrator';
+                    $registrationIDs = $fcm_ids;
+
+                    $fcmMsg = [
+                        'title' => $Property->name . ' Property Updated',
+                        'message' => 'Your Property Post ' . $msg,
+                        'type' => 'property_inquiry',
+                        'body' => 'Your Property Post ' . $msg,
+                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                        'sound' => 'default',
+                        'id' => (string)$Property->id
+                    ];
+
+                    // Call send_push_notification and handle errors if the function fails
+                    try {
+                        send_push_notification($registrationIDs, $fcmMsg);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to send FCM notification: " . $e->getMessage());
+                    }
+                }
+
+                // Log notification in the Notifications table
+                Notifications::create([
+                    'title' => $Property->name . ' Property Updated',
+                    'message' => 'Your Property Post ' . $msg, // Use $msg here
+                    'image' => '',
+                    'type' => '1',
+                    'send_type' => '0',
+                    'customers_id' => $Property->customer->id,
+                    'propertys_id' => $Property->id
+                ]);
+            }
+        }
+
+        // Return success response
+        $response = [
+            'error' => false,
+            'message' => $request->status ? "Property Activated Successfully" : "Property Deactivated Successfully"
+        ];
+        return response()->json($response);
+    }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        // Check permissions
+        if (!has_permissions('update', 'property')) {
+            return response()->json([
+                'error' => true,
+                'message' => PERMISSION_ERROR_MSG,
+            ]);
+        }
+
+        $action = $request->action;
+        $ids = $request->ids;
+
+        // Validate that $ids is an array and not empty
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json([
+                'error' => true,
+                'message' => 'No property IDs provided or invalid format.',
+            ]);
+        }
+
+        if ($action === 'delete') {
+            // Perform deletion for the specified properties
+            Property::whereIn('id', $ids)->delete();
+
+            // Return response for delete action
+            return response()->json([
+                'error' => false,
+                'message' => "Properties Deleted Successfully",
+            ]);
+        } else {
+            // Determine status based on the action
+            $status = $action === 'activate' ? 1 : 0;
+
+            // Update property status
+            Property::whereIn('id', $ids)->update(['status' => $status]);
+
+            // Fetch properties with linked customers
+            $properties = Property::with('customer')->whereIn('id', $ids)->get();
+
+            foreach ($properties as $Property) {
+                // Initialize the $msg variable
+                $msg = $status == 1 ? 'Activated now by Administrator' : 'Deactivated now by Administrator';
+
+                if (!empty($Property->customer)) {
+                    if ($Property->customer->fcm_id != '' && $Property->customer->notification == 1) {
+                        $fcm_ids = [];
+                        $customer_id = Customer::where('id', $Property->customer->id)
+                            ->where('isActive', '1')
+                            ->where('notification', 1)
+                            ->exists();
+
+                        if ($customer_id) {
+                            $user_token = Usertokens::where('customer_id', $Property->customer->id)
+                                ->pluck('fcm_id')
+                                ->toArray();
+
+                            if (!empty($user_token)) {
+                                $fcm_ids = $user_token;
+                            }
+                        }
+
+                        if (!empty($fcm_ids)) {
+                            $fcmMsg = [
+                                'title' => $Property->name . ' Property Updated',
+                                'message' => 'Your Property Post ' . $msg,
+                                'type' => 'property_inquiry',
+                                'body' => 'Your Property Post ' . $msg,
+                                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                                'sound' => 'default',
+                                'id' => (string)$Property->id,
+                            ];
+
+                            try {
+                                send_push_notification($fcm_ids, $fcmMsg);
+                            } catch (\Exception $e) {
+                                Log::error("Failed to send FCM notification for property ID {$Property->id}: " . $e->getMessage());
+                            }
+                        }
+
+                        Notifications::create([
+                            'title' => $Property->name . ' Property Updated',
+                            'message' => 'Your Property Post ' . $msg,
+                            'image' => '',
+                            'type' => '1',
+                            'send_type' => '0',
+                            'customers_id' => $Property->customer->id,
+                            'propertys_id' => $Property->id,
+                        ]);
+                    }
+                }
+            }
+
+            return response()->json([
+                'error' => false,
+                'message' => $action === 'activate' ? "Properties Activated Successfully" : "Properties Deactivated Successfully",
+            ]);
+        }
+    }
+
+
+
+
 
 
     public function removeGalleryImage(Request $request)
@@ -1154,14 +1379,16 @@ class PropertController extends Controller
             return view('property.inactive_property', compact('category'));
         }
     }
-
-
-    public function export()
+    public function export(Request $request)
     {
-        return Excel::download(new PropertyExport, 'users.csv');
+        // Validate the input data
+        $validated = $request->validate([
+            'start_month' => 'required|date',
+            'end_month' => 'required|date|after_or_equal:start_month',
+        ]);
+
+        // Log validated dates
+
+        return Excel::download(new PropertyExport($validated['start_month'], $validated['end_month']), 'properties.xlsx');
     }
-
 }
-
-
-

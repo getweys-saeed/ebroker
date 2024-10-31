@@ -9,13 +9,32 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class PropertyExport implements FromCollection, WithHeadings, WithMapping
 {
+
+    protected $startMonth;
+    protected $endMonth;
+
     /**
+     * Constructor to initialize start and end dates.
+     *
+     * @param string $startMonth
+     * @param string $endMonth
+     */
+    public function __construct($startMonth, $endMonth)
+    {
+        $this->startMonth = $startMonth;
+        $this->endMonth = $endMonth;
+    }
+
+    /**
+     * Retrieve the collection based on the date range.
+     *
      * @return \Illuminate\Support\Collection
      */
     public function collection()
     {
         // Fetch all properties
-        return Property::all();
+        return Property::whereBetween('created_at', [$this->startMonth, $this->endMonth])->get();
+
     }
 
     public function headings(): array
@@ -42,8 +61,6 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
             'Added By',
             'Status',
             'Total Clicks',
-            'Created At',
-            'Updated At',
             'Rent Duration',
             'Slug ID',
             'Meta Title',
@@ -81,8 +98,6 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
             $property->added_by,
             $property->status == 1 ? 'Active' : 'Inactive',  // Translate status to readable text
             $property->total_click,
-            $property->created_at->format('Y-m-d H:i:s'),  // Format date
-            $property->updated_at->format('Y-m-d H:i:s'),  // Format date
             $property->rentduration,
             $property->slug_id,
             $property->meta_title,
