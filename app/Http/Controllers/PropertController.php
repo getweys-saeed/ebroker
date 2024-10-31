@@ -1389,6 +1389,6 @@ class PropertController extends Controller
 
         // Log validated dates
 
-        return Excel::download(new PropertyExport($validated['start_month'], $validated['end_month']), 'properties.xlsx');
+        return Excel::download(new PropertyExport($validated['start_month'], $validated['end_month']), 'properties.csv');
     }
 }

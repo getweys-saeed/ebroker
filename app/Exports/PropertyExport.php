@@ -6,10 +6,11 @@ use App\Models\Property;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyExport implements FromCollection, WithHeadings, WithMapping
 {
-
     protected $startMonth;
     protected $endMonth;
 
@@ -32,19 +33,26 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
      */
     public function collection()
     {
-        // Fetch all properties
-        return Property::whereBetween('created_at', [$this->startMonth, $this->endMonth])->get();
 
+    $startDate = $this->startMonth . ' 00:00:00';
+    $endDate = $this->endMonth . ' 23:59:59';
+
+    return Property::whereBetween('created_at', [$startDate, $endDate])->get();
     }
 
+    /**
+     * Define the headings for the exported Excel file.
+     *
+     * @return array
+     */
     public function headings(): array
     {
         return [
-            'Property ID',
+            'ID',
             'Category ID',
             'Package ID',
-            'Property Title',
-            'Property Description',
+            'Title',
+            'Description',
             'Address',
             'Client Address',
             'Property Type',
@@ -61,6 +69,8 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
             'Added By',
             'Status',
             'Total Clicks',
+            'Created At',
+            'Updated At',
             'Rent Duration',
             'Slug ID',
             'Meta Title',
@@ -69,11 +79,16 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
             'Meta Image',
             'Is Premium',
             'Document',
-            'Featured Property',
-            'Notification Seen'
+            'Featured Property'
         ];
     }
 
+    /**
+     * Map the data for each row in the Excel file.
+     *
+     * @param $property
+     * @return array
+     */
     public function map($property): array
     {
         return [
@@ -84,9 +99,9 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
             $property->description,
             $property->address,
             $property->client_address,
-            $property->propery_type,
+            $property->property_type == 0 ? 'Sell' : 'Rent',
             $property->price,
-            $property->post_type,
+            $property->post_type == 0 ? 'Admin' : 'Customer',
             $property->city,
             $property->country,
             $property->state,
@@ -96,18 +111,19 @@ class PropertyExport implements FromCollection, WithHeadings, WithMapping
             $property->latitude,
             $property->longitude,
             $property->added_by,
-            $property->status == 1 ? 'Active' : 'Inactive',  // Translate status to readable text
+            $property->status == 1 ? 'Active' : 'Deactive',
             $property->total_click,
+            $property->created_at,
+            $property->updated_at,
             $property->rentduration,
             $property->slug_id,
             $property->meta_title,
             $property->meta_description,
             $property->meta_keywords,
             $property->meta_image,
-            $property->is_premium == 1 ? 'Yes' : 'No',  // Translate is_premium to readable text
+            $property->is_premium,
             $property->document,
             $property->featured_property,
-            $property->notification_seen == 1 ? 'Seen' : 'Not Seen'  // Translate notification_seen
         ];
     }
 }

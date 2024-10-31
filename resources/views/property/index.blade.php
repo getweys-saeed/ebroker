@@ -25,7 +25,7 @@
 
                     </button>
                     <div id="sideDrawer" class="side-drawer">
-                        <form action="{{ url('export/property/') }}" class="p-3">
+                        <form action="{{ url('export/property/') }}" method="GET" class="p-3">
                             @csrf
                             <span class="fw-bold mb-1">Select Date Range</span>
 
@@ -500,7 +500,7 @@
             };
         }
 
-    
+
 
 
 

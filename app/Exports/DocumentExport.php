@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class DocumentExport implements FromCollection, WithHeadings, WithMapping
 {
-    
+
 
     protected $startMonth;
     protected $endMonth;
