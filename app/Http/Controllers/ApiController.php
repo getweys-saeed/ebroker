@@ -1917,6 +1917,7 @@ class ApiController extends Controller
                 }
 
                 $advertisementData->image = "";
+                // save
                 $advertisementData->save();
 
                 $result = Property::with('customer')->with('category:id,category,image')->with('favourite')->with('parameters')->with('interested_users')->where('id', $request->property_id)->get();
