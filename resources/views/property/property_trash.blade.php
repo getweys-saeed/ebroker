@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-    {{ __('Property') }}
+    {{ __('Property Trash') }}
 @endsection
 
 @section('page-title')
@@ -11,55 +11,6 @@
                 <h4>@yield('title')</h4>
             </div>
             <div class="order-md-2  order-first d-flex justify-content-end align-items-baseline">
-                <div class=" d-flex me-2 justify-content-end">
-                    {!! Form::open(['route' => 'property.create']) !!}
-                    {{ method_field('get') }}
-                    {{ Form::submit(__('Add Property'), ['class' => 'btn btn-primary ']) }}
-                    {!! Form::close() !!}
-                </div>
-
-                <div class="btn-group d-flex gap-2" style="position: relative">
-                    <button id="exportButton" type="button" class="btn text-light "
-                        style="border-color:#cac8c9; background-color: #ffffff; border-radius:6px; width:40px; height:40px;">
-                        <i class="bi bi-download text-danger"></i>
-
-                    </button>
-                    <div id="sideDrawer" class="side-drawer">
-                        <form action="{{ url('export/property/') }}" method="GET" class="p-3">
-                            @csrf
-                            <span class="fw-bold mb-1">Select Date Range</span>
-
-                            <!-- Start Month Input -->
-                            <div class="mb-3">
-                                <label for="start_month" class="form-label">Start Month</label>
-                                <input type="date" id="start_month" name="start_month" class="form-control" required>
-                                @error('start_month')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
-
-                            <!-- End Month Input -->
-                            <div class="mb-3">
-                                <label for="end_month" class="form-label">End Month</label>
-                                <input type="date" id="end_month" name="end_month" class="form-control" required>
-                                @error('end_month')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
-
-                            <!-- Export Button -->
-                            <button type="submit" class="btn btn-primary w-100">Export</button>
-                        </form>
-                    </div>
-
-                    <a href="{{ route('trashProperty') }}" type="button"
-                        style="border-color:#cac8c9;background-color: #fff; border-radius:6px"
-                        class="btn text-light dropdown-toggle dropdown-toggle-split">
-                        <i class="fas fa-trash-alt fs-6 text-danger"></i> <!-- Three-dot icon -->
-                        <span class="visually-hidden">Toggle Dropdown</span>
-                    </a>
-
-                </div>
 
             </div>
 
@@ -79,7 +30,7 @@
                     <div class="row  justify-content-center align-items-center">
 
                         {{-- Filter Category --}}
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             <select class="form-select form-control-sm" id="filter_category">
                                 <option value="">{{ __('Select Category') }}</option>
                                 @if (isset($category))
@@ -90,7 +41,7 @@
                             </select>
                         </div>
                         {{-- Filter Status --}}
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             <select id="status" class="form-select form-control-sm">
                                 <option value="">{{ __('Select Status') }} </option>
                                 <option value="0">{{ __('InActive') }}</option>
@@ -98,7 +49,7 @@
                             </select>
                         </div>
                         {{-- Filter Status --}}
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             <select id="property-type-filter" class="form-select form-control-sm">
                                 <option value="">{{ __('Select Type') }} </option>
                                 <option value="0">{{ __('Commercial') }}</option>
@@ -106,16 +57,9 @@
 
                             </select>
                         </div>
-                      {{-- Filter Feature --}}
+                        {{-- Add Property Button --}}
 
-                        <div class="col-sm-3">
-                            <select id="property-type-feature" class="form-select form-control-sm">
-                                <option value="">{{ __('Select Feature') }} </option>
-                                <option value="1">{{ __('Featured') }}</option>
-                                <option value="0">{{ __('UnFeatured') }}</option>
 
-                            </select>
-                        </div>
                     </div>
                 </div>
             @endif
@@ -136,8 +80,7 @@
                         <select id="bulkAction" class="form-select">
                             <option value="" selected>{{ __('Action') }}</option>
                             <option value="delete">{{ __('Delete Selected') }}</option>
-                            <option value="activate">{{ __('Activate Selected') }}</option>
-                            <option value="deactivate">{{ __('Deactivate Selected') }}</option>
+
                         </select>
 
                         <button id="applyBulkAction" class="btn btn-sm btn-danger">{{ __('Apply') }}</button>
@@ -149,7 +92,7 @@
                 <div class="row">
                     <div class="col-12">
                         <table class="table table-striped" id="table_list" data-toggle="table"
-                            data-url="{{ url('getPropertyList') }}" data-click-to-select="true"
+                            data-url="{{ url('getPropertyListTrash') }}" data-click-to-select="true"
                             data-side-pagination="server" data-pagination="true"
                             data-page-list="[5, 10, 20, 50, 100, 200,All]" data-search="true" data-search-align="right"
                             data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true"
@@ -199,10 +142,6 @@
                                         <th scope="col" data-field="operate" data-align="center"
                                             data-sortable="false"> {{ __('Action') }}</th>
                                     @endif
-                                    <th scope="col" data-field="trash" data-formatter="trashProperty"
-                                        data-sortable="false" data-align="center">
-                                        {{ __('Trash') }}
-                                    </th>
                                 </tr>
                             </thead>
                         </table>
@@ -291,6 +230,8 @@
             });
         });
     </script>
+
+    <script></script>
     <script>
         const selectAllCheckbox = $('#selectAllCheck');
 
@@ -420,10 +361,6 @@
             $('#table_list').bootstrapTable('refresh');
 
         });
-        $('#property-type-feature').on('change', function() {
-            $('#table_list').bootstrapTable('refresh');
-
-        });
 
 
         // Function to show modal with document image
@@ -462,19 +399,14 @@
         var baseImageUrl = "{{ asset('images/property_document/') }}";
 
         function imageFormatterDoc(value, row) {
-            // Log the value for debugging
 
-            // Ensure the row and document are valid
             if (row && row.document) {
-                // Construct the full image URL using the base path from Blade
+
                 var imageUrl = baseImageUrl + '/' + row.document;
 
-                // Check if the image is an SVG file
                 if (imageUrl.split('.').pop() === 'svg') {
-                    // For SVG, use the embed tag
                     return '<embed class="svg-img" src="' + imageUrl + '">';
                 } else {
-                    // For other image formats, use the img tag wrapped in an anchor for pop-up
                     return '<a class="image-popup-no-margins" href="' + imageUrl +
                         '"><img class="rounded avatar-md shadow " alt="" src="' + imageUrl +
                         '" style="object-fit:cover" width="40px" height="40px"></a>';
@@ -484,10 +416,6 @@
                 return '';
             }
         }
-
-
-
-
 
 
         $(document).ready(function() {
@@ -513,8 +441,7 @@
                 search: p.search,
                 status: $('#status').val(),
                 category: $('#filter_category').val(),
-                property_type: $('#property-type-filter').val(),
-                property_type_feature: $('#property-type-feature').val()
+                property_type: $('#property-type-filter').val()
             };
         }
 
@@ -550,60 +477,6 @@
             };
 
 
-        }
-
-        function trashProperty(value, row, index) {
-            return `<button class="btn btn-sm btn-danger rounded-5 border-0" onclick="toggleTrash(${row.id})">
-                <i class="fa fa-trash"></i>
-            </button>`;
-        }
-
-
-        function toggleTrash(propertyId) {
-            $.ajax({
-                url: `/update-trash-status-property`, // Endpoint to handle the trash update
-                type: 'POST',
-                data: {
-                    id: propertyId,
-                    trash: 1, // Setting trash value to 1
-                    _token: '{{ csrf_token() }}' // Include CSRF token if using Laravel
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Toastify({
-                            text: "Property Moved To Trash",
-                            duration: 3000,
-                            gravity: "top", // `top` or `bottom`
-                            position: "right", // `left`, `center` or `right`
-                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        }).showToast();
-
-                        $('#table_list').bootstrapTable('refresh');
-
-                    } else {
-                        Toastify({
-                            text: "Error moving Property to trash.",
-                            duration: 3000,
-                            gravity: "top", // `top` or `bottom`
-                            position: "right", // `left`, `center` or `right`
-                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        }).showToast();
-                        $('#table_list').bootstrapTable('refresh');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    Toastify({
-                        text: "An error occurred while updating trash status.",
-                        duration: 3000,
-                        gravity: "top", // `top` or `bottom`
-                        position: "right", // `left`, `center` or `right`
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }).showToast();
-                    $('#table_list').bootstrapTable('refresh');
-                    console.error(error);
-
-                }
-            });
         }
     </script>
 @endsection

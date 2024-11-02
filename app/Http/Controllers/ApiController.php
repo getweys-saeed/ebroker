@@ -836,6 +836,9 @@ class ApiController extends Controller
             'address' => 'required',
             'title_image' => 'required|file|max:3000|mimes:jpeg,png,jpg',
             'document' => 'required|image|max:3000|mimes:jpeg,png,jpg',
+            'whatsapp_number' => 'required|max:15|min:10',
+            'square_yd' => 'required',
+
 
         ]);
         if ($validator->fails()) {
@@ -885,6 +888,8 @@ class ApiController extends Controller
                 $saveProperty->added_by = $loggedInUserId;
                 $saveProperty->status = (isset($request->status)) ? $request->status : 0;
                 $saveProperty->video_link = (isset($request->video_link)) ? $request->video_link : "";
+                $saveProperty->square_yd = (isset($request->square_yd)) ? $request->square_yd : "";
+                $saveProperty->whatsapp_number = (isset($request->whatsapp_number)) ? $request->whatsapp_number : "";
                 $saveProperty->package_id = $request->package_id;
                 $saveProperty->post_type = 1;
 
@@ -1190,6 +1195,13 @@ class ApiController extends Controller
 
                     if (isset($request->description)) {
                         $property->description = $request->description;
+                    }
+
+                    if (isset($request->whatsapp_number)) {
+                        $property->whatsapp_number = $request->whatsapp_number;
+                    }
+                    if (isset($request->square_yd)) {
+                        $property->square_yd = $request->square_yd;
                     }
 
                     if (isset($request->address)) {

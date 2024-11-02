@@ -39,6 +39,12 @@ class CustomersController extends Controller
         return view('customer.unverified_customer');
     }
 
+    public function trashUsers()
+    {
+
+        return view('customer.customer_trash');
+    }
+
 
 
 
@@ -169,7 +175,7 @@ class CustomersController extends Controller
         }
 
 
-        $res = $sql->get();
+        $res = $sql->where("trash", 0)->get();
 
         $bulkData = array();
         $bulkData['total'] = $total;
@@ -199,6 +205,80 @@ class CustomersController extends Controller
         // dd($bulkData);
         return response()->json($bulkData);
     }
+
+    public function customerListTrash(Request $request)
+    {
+        $offset = $request->input('offset', 0);
+        $limit = $request->input('limit', 10);
+        $sort = $request->input('sort', 'sequence');
+        $order = $request->input('order', 'ASC');
+
+        $status = null;
+        if (isset($_GET['property_id'])) {
+            $interested_users =  InterestedUser::select('customer_id')->where('property_id', $_GET['property_id'])->pluck('customer_id');
+
+            $sql = Customer::whereIn('id', $interested_users)->orderBy($sort, $order);
+            if (isset($_GET['search']) && !empty($_GET['search'])) {
+                $search = $_GET['search'];
+                $sql->where(function ($query) use ($search) {
+                    $query->where('id', 'LIKE', "%$search%")->orwhere('email', 'LIKE', "%$search%")->orwhere('name', 'LIKE', "%$search%")->orwhere('mobile', 'LIKE', "%$search%");
+                });
+            }
+        } else {
+
+            $sql = Customer::orderBy($sort, $order);
+            if (isset($_GET['search']) && !empty($_GET['search'])) {
+                $search = $_GET['search'];
+                $sql->where('id', 'LIKE', "%$search%")->orwhere('email', 'LIKE', "%$search%")->orwhere('name', 'LIKE', "%$search%")->orwhere('mobile', 'LIKE', "%$search%");
+            }
+        }
+        if (isset($_GET['status']) && $_GET['status'] !== '') {
+            $status = $_GET['status'];
+        }
+
+        if ($status !== null) {
+            $sql = $sql->where('otp_verified', $status);
+        }
+
+
+        $total = $sql->count();
+
+        if (isset($_GET['limit'])) {
+            $sql->skip($offset)->take($limit);
+        }
+
+
+        $res = $sql->where("trash", 1)->get();
+
+        $bulkData = array();
+        $bulkData['total'] = $total;
+        $rows = array();
+        $tempRow = array();
+        $count = 1;
+
+
+        $operate = '';
+        foreach ($res as $row) {
+            $tempRow = $row->toArray();
+
+            // Mask Details in Demo Mode
+            $tempRow['mobile'] = (env('DEMO_MODE') ? (env('DEMO_MODE') == true && Auth::user()->email == 'superadmin@gmail.com' ? ($row->mobile) : '****************************') : ($row->mobile));
+            $tempRow['email'] = (env('DEMO_MODE') ? (env('DEMO_MODE') == true && Auth::user()->email == 'superadmin@gmail.com' ? ($row->email) : '****************************') : ($row->email));
+            $tempRow['firebase_id'] = (env('DEMO_MODE') ? (env('DEMO_MODE') == true && Auth::user()->email == 'superadmin@gmail.com' ? ($row->firebase_id) : '****************************') : ($row->firebase_id));
+            $tempRow['address'] = (env('DEMO_MODE') ? (env('DEMO_MODE') == true && Auth::user()->email == 'superadmin@gmail.com' ? ($row->address) : '****************************') : ($row->address));
+
+            $tempRow['edit_status_url'] = 'customerstatus';
+            $tempRow['total_properties'] =  '<a href="' . url('property') . '?customer=' . $row->id . '">' . $row->total_properties . '</a>';
+            $tempRow['operate'] = $operate;
+            $rows[] = $tempRow;
+            $count++;
+        }
+
+        $bulkData['rows'] = $rows;
+        // dd($bulkData);
+        return response()->json($bulkData);
+    }
+
 
     public function customerListVerified(Request $request)
     {
@@ -409,7 +489,7 @@ class CustomersController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' =>$request->status ? "Customer Activatd Successfully" : "Customer Deactivatd Successfully"
+                'message' => $request->status ? "Customer Activatd Successfully" : "Customer Deactivatd Successfully"
             ]);
         }
 
@@ -417,6 +497,17 @@ class CustomersController extends Controller
             'success' => false,
             'message' => 'Invalid action selected.',
         ]);
+    }
+
+    public function updateTrashStatus(Request $request)
+    {
+        $customer = Customer::find($request->id);
+        if ($customer) {
+            $customer->trash = $request->trash;
+            $customer->save();
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['success' => false], 400);
     }
 
 

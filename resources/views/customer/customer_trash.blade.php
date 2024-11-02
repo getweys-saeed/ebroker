@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title')
-    {{ __('Customer') }}
+    {{ __('Trash Customer') }}
 @endsection
 
 @section('page-title')
@@ -13,87 +13,11 @@
             <div class="col-12 col-md-6 order-md-2 order-first d-flex justify-content-end">
 
 
-                <div class="btn-group">
-                    <button id="exportButton" type="button" class="btn text-light me-1"
-                        style="border-color:#cac8c9; background-color: #ffffff; border-radius:6px; width:40px; height:40px;">
-                        <i class="bi bi-download text-danger"></i>
-                    </button>
-
-                    <a href="{{route("customer.customerTrash")}}" type="button" style="border-color:#cac8c9;background-color: #fff; border-radius:6px"
-                        class="btn text-light dropdown-toggle dropdown-toggle-split" >
-                        <i class="fas fa-trash-alt fs-6 text-danger"></i> <!-- Three-dot icon -->
-                        <span class="visually-hidden">Toggle Dropdown</span>
-                    </a>
-
-                </div>
 
             </div>
         </div>
     </div>
 @endsection
-<div id="sideDrawer" class="side-drawer">
-    <form action="{{ url('customer/export') }}" class="p-3">
-        @csrf
-        <span class="fw-bold mb-1">Select Date Range</span>
-
-        <!-- Start Month Input -->
-        <div class="mb-3">
-            <label for="start_month" class="form-label">Start Month</label>
-            <input type="date" id="start_month" name="start_month" class="form-control" required>
-            @error('start_month')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        <!-- End Month Input -->
-        <div class="mb-3">
-            <label for="end_month" class="form-label">End Month</label>
-            <input type="date" id="end_month" name="end_month" class="form-control" required>
-            @error('end_month')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        <!-- Export Button -->
-        <button type="submit" class="btn btn-primary w-100">Export</button>
-    </form>
-</div>
-
-<style>
-    /* Right-Side Sliding Drawer Styling */
-    .side-drawer {
-        position: fixed;
-        top: 190px;
-        /* Aligns with button height */
-        right: -300px;
-        /* Initially hidden off-screen on the right */
-        width: 220px;
-        /* Adjust width as needed */
-        height: auto;
-        background-color: #ffffff;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-        transition: right 0.4s ease;
-        /* Smooth slide effect */
-        z-index: 1050;
-        padding: 15px;
-    }
-
-    .side-drawer.active {
-        right: 30px;
-        /* Slides in next to the button */
-    }
-</style>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const exportButton = document.getElementById('exportButton');
-        const drawer = document.getElementById('sideDrawer');
-
-        exportButton.addEventListener('click', function() {
-            drawer.classList.toggle('active'); // Toggle the drawer's visibility
-        });
-    });
-</script>
 
 
 @section('content')
@@ -114,8 +38,7 @@
                         <select id="bulkAction" class="form-select">
                             <option value="" selected>{{ __('Action') }}</option>
                             <option value="delete">{{ __('Delete Selected') }}</option>
-                            <option value="activate">{{ __('Activate Selected') }}</option>
-                            <option value="deactivate">{{ __('Deactivate Selected') }}</option>
+
                         </select>
 
                         <button id="applyBulkAction" class="btn btn-sm btn-danger">{{ __('Apply') }}</button>
@@ -138,10 +61,11 @@
                 <div class="row">
                     <div class="col-12">
                         <table class="table table-striped" id="table_list" data-toggle="table"
-                            data-url="{{ url('customerList') }}" data-click-to-select="true" data-side-pagination="server"
-                            data-pagination="true" data-page-list="[5, 10, 20, 50, 100, 200, All]" data-search="true"
-                            data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true"
-                            data-trim-on-search="false" data-responsive="true" data-sort-name="id" data-sort-order="desc"
+                            data-url="{{ url('customerListTrash') }}" data-click-to-select="true"
+                            data-side-pagination="server" data-pagination="true"
+                            data-page-list="[5, 10, 20, 50, 100, 200, All]" data-search="true" data-toolbar="#toolbar"
+                            data-show-columns="true" data-show-refresh="true" data-trim-on-search="false"
+                            data-responsive="true" data-sort-name="id" data-sort-order="desc"
                             data-pagination-successively-size="3" data-query-params="queryParams" data-show-export="true"
                             data-export-options='{ "fileName": "data-list-<?= date(' d-m-y') ?>" }'>
                             <thead class="thead-dark">
@@ -169,14 +93,9 @@
                                         data-formatter="docVerificationStatusFormatter" data-sortable="false"
                                         data-align="center">
                                         {{ __('Document Verification') }}</th>
-                                    <th scope="col" data-field="isActive"
-                                        data-formatter="enableDisableSwitchFormatter" data-sortable="false"
-                                        data-align="center">
-                                        {{ __('Enable/Disable') }}
-                                    </th>
-                                    <th scope="col" data-field="trash" data-formatter="trashCustomer"
+                                    <th scope="col" data-field="isActive" data-formatter="enableDisableSwitchFormatter"
                                         data-sortable="false" data-align="center">
-                                        {{ __('Trash') }}
+                                        {{ __('Enable/Disable') }}
                                     </th>
 
                                 </tr>
@@ -339,60 +258,6 @@
 
         function bulkAction(value, row, index) {
             return ` <input type="checkbox" class="form-check-input" name="checkId" value="${row.id}">`;
-        }
-
-        function trashCustomer(value, row, index) {
-            return `<button class="btn btn-danger" onclick="toggleTrash(${row.id})">
-                <i class="fa fa-trash"></i>
-            </button>`;
-        }
-
-
-        function toggleTrash(customerId) {
-            $.ajax({
-                url: `/update-trash-status`, // Endpoint to handle the trash update
-                type: 'POST',
-                data: {
-                    id: customerId,
-                    trash: 1, // Setting trash value to 1
-                    _token: '{{ csrf_token() }}' // Include CSRF token if using Laravel
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Toastify({
-                            text: "Customer Moved To Trash",
-                            duration: 3000,
-                            gravity: "top", // `top` or `bottom`
-                            position: "right", // `left`, `center` or `right`
-                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        }).showToast();
-
-                        $('#table_list').bootstrapTable('refresh');
-
-                    } else {
-                        Toastify({
-                            text: "Error moving customer to trash.",
-                            duration: 3000,
-                            gravity: "top", // `top` or `bottom`
-                            position: "right", // `left`, `center` or `right`
-                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        }).showToast();
-                        $('#table_list').bootstrapTable('refresh');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    Toastify({
-                        text: "An error occurred while updating trash status.",
-                        duration: 3000,
-                        gravity: "top", // `top` or `bottom`
-                        position: "right", // `left`, `center` or `right`
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }).showToast();
-                    $('#table_list').bootstrapTable('refresh');
-                    console.error(error);
-
-                }
-            });
         }
     </script>
 @endsection

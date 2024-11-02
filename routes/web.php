@@ -156,6 +156,9 @@ Route::middleware(['language'])->group(function () {
 
         Route::get('customerList', [CustomersController::class, 'customerList']);
 
+        Route::get('customerListTrash', [CustomersController::class, 'customerListTrash']);
+
+        Route::post('/update-trash-status', [CustomersController::class, 'updateTrashStatus']);
 
         Route::get('verifiedUser', [CustomersController::class, 'verifiedUser']);
         Route::get('customerListVerified', [CustomersController::class, 'customerListVerified']);
@@ -163,6 +166,7 @@ Route::middleware(['language'])->group(function () {
         Route::get('unverifiedUser', [CustomersController::class, 'unverifiedUser']);
         Route::get('customerListUnverified', [CustomersController::class, 'customerListUnverified']);
 
+        Route::get('trashUsers', [CustomersController::class, 'trashUsers'])->name('customer.customerTrash');
         Route::post('customerstatus', [CustomersController::class, 'update'])->name('customer.customerstatus');
 
         // In routes/web.php
@@ -301,10 +305,13 @@ Route::middleware(['language'])->group(function () {
         Route::post('/bulk-property-update', [PropertController::class, 'bulkUpdateStatus'])->name('property.BulkUpdate');
 
         Route::get('getPropertyList', [PropertController::class, 'getPropertyList']);
+        Route::post('/update-trash-status-property', [PropertController::class, 'updateTrashStatusProperty']);
+
+         Route::get('getPropertyListTrash', [PropertController::class, 'getPropertyListTrash']);
 
         Route::get('activeProperty', [PropertController::class, 'activeProperty'])->name("activeProperty");
         Route::get('getPropertyListActive', [PropertController::class, 'getPropertyListActive'])->name("getPropertyListActive");
-
+        Route::get('trashProperty', [PropertController::class, 'trashProperty'])->name("trashProperty");
         Route::get('inactiveProperty', [PropertController::class, 'inactiveProperty'])->name("inactiveProperty");
         Route::get('getPropertyListInactive', [PropertController::class, 'getPropertyListInactive'])->name("getPropertyListInactive");
 

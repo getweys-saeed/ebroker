@@ -114,7 +114,8 @@ class PropertController extends Controller
             $Saveproperty->meta_title = isset($request->meta_title) ? $request->meta_title : $request->title;
             $Saveproperty->meta_description = $request->meta_description;
             $Saveproperty->meta_keywords = $request->keywords;
-
+            $Saveproperty->square_yd = (isset($request->square_yd)) ? $request->square_yd : "";
+            $Saveproperty->whatsapp_number = (isset($request->whatsapp_number)) ? $request->whatsapp_number : "";
             $Saveproperty->rentduration = $request->price_duration;
             $Saveproperty->is_premium = $request->is_premium;
 
@@ -303,6 +304,8 @@ class PropertController extends Controller
             $UpdateProperty->meta_description = (isset($request->edit_meta_description)) ? $request->edit_meta_description : '';
             $UpdateProperty->meta_keywords = (isset($request->Keywords)) ? $request->Keywords : '';
             $UpdateProperty->featured_property = (isset($request->featured_property)) ? $request->featured_property : '';
+            $UpdateProperty->square_yd = (isset($request->square_yd)) ? $request->square_yd : "";
+            $UpdateProperty->whatsapp_number = (isset($request->whatsapp_number)) ? $request->whatsapp_number : "";
 
             $UpdateProperty->rentduration = $request->price_duration;
             if ($request->hasFile('title_image')) {
@@ -557,7 +560,7 @@ class PropertController extends Controller
             $sql = $sql->skip($offset)->take($limit);
         }
 
-        $sql->where('status', '=', 1);
+        $sql->where('status', '=', 1)->where('trash', 0);
         // Fetch the data
         $res = $sql->get();
 
@@ -604,7 +607,7 @@ class PropertController extends Controller
 
             // Interested users count and display
             $count = "  " . count($interested_users);
-            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
+            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary edit-icon-btn', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
 
             // Fill data for the table
             $tempRow['total_interested_users'] = count($interested_users);
@@ -719,7 +722,7 @@ class PropertController extends Controller
             $sql = $sql->skip($offset)->take($limit);
         }
 
-        $sql->where('status', '=', 0);
+        $sql->where('status', '=', 0)->where('trash', 0);
         // Fetch the data
         $res = $sql->get();
 
@@ -766,7 +769,7 @@ class PropertController extends Controller
 
             // Interested users count and display
             $count = "  " . count($interested_users);
-            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
+            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary edit-icon-btn', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
 
             // Fill data for the table
             $tempRow['total_interested_users'] = count($interested_users);
@@ -807,6 +810,175 @@ class PropertController extends Controller
     }
 
     public function getPropertyList(Request $request)
+    {
+        // Pagination and sorting
+        $offset = (int) $request->input('offset', 0); // Ensure integer for pagination
+        $limit = (int) $request->input('limit', 10);   // Ensure integer for pagination
+        $sort = $request->input('sort', 'sequence');
+        $order = $request->input('order', 'ASC');
+
+        // Base query
+        $sql = Property::with('category')
+            ->with('customer:id,name')
+            ->with('assignParameter.parameter')
+            ->with('interested_users')
+            ->with('advertisement')
+            ->orderBy($sort, $order);
+
+        // Filter inputs
+        $searchQuery = null;
+        $propertyType = null;
+        $propertyTypeFeature = null;
+        $status = null;
+        $categoryId = null;
+
+        // Extract and validate filters
+        if (isset($_GET['search']) && !empty($_GET['search'])) {
+            $searchQuery = trim($_GET['search']);  // Trim whitespace
+        }
+
+        if (isset($_GET['property_type']) && $_GET['property_type'] !== "") {
+            $propertyType = $_GET['property_type'];
+        }
+
+        if (isset($_GET['property_type_feature']) && $_GET['property_type_feature'] !== "") {
+            $propertyTypeFeature = $_GET['property_type_feature'];
+        }
+
+        if (isset($_GET['status']) && $_GET['status'] !== '') {
+            $status = $_GET['status'];
+        }
+
+        if (isset($_GET['category']) && $_GET['category'] !== '') {
+            $categoryId = (int) $_GET['category']; // Ensure integer for category ID
+        }
+
+        // Apply search filters
+        if ($searchQuery !== null) {
+            $sql = $sql->where(function ($query) use ($searchQuery) {
+                $query->where('id', 'LIKE', "%$searchQuery%")
+                    ->orWhere('title', 'LIKE', "%$searchQuery%")
+                    ->orWhere('address', 'LIKE', "%$searchQuery%")
+                    ->orWhereHas('category', function ($query) use ($searchQuery) {
+                        $query->where('category', 'LIKE', "%$searchQuery%");
+                    })
+                    ->orWhereHas('customer', function ($query) use ($searchQuery) {
+                        $query->where('name', 'LIKE', "%$searchQuery%")
+                            ->orWhere('email', 'LIKE', "%$searchQuery%");
+                    });
+            });
+        }
+
+        if ($propertyType !== null) {
+            $sql = $sql->where('propery_type', $propertyType);
+        }
+
+        if ($propertyTypeFeature !== null) {
+            $sql = $sql->where('featured_property', $propertyTypeFeature);
+        }
+
+        if ($status !== null) {
+            $sql = $sql->where('status', $status);
+        }
+
+        if ($categoryId !== null) {
+            $sql = $sql->where('category_id', $categoryId);
+        }
+
+        // Fetch total count before applying pagination
+        $total = $sql->count();
+
+        // Apply pagination
+        if (isset($limit)) {
+            $sql = $sql->skip($offset)->take($limit);
+        }
+   $sql->where('trash', 0);
+        // Fetch the data
+        $res = $sql->get();
+
+        // Prepare response
+        $bulkData = array();
+        $bulkData['total'] = $total;
+        $rows = array();
+        $currency_symbol = Setting::where('type', 'currency_symbol')->pluck('data')->first();
+
+        foreach ($res as $row) {
+            $tempRow = $row->toArray();
+            $tempRow['property_type_raw'] = $row->getRawOriginal('propery_type');
+
+            // Operation buttons based on permissions
+            if ($row->added_by == 0) {
+                $operate = '';
+                if (has_permissions('update', 'property')) {
+                    $operate = BootstrapTableService::editButton(route('property.edit', $row->id), false);
+                }
+                if (has_permissions('delete', 'property')) {
+                    $operate .= BootstrapTableService::deleteButton(route('property.destroy', $row->id));
+                }
+            } else {
+                $operate = BootstrapTableService::deleteButton(route('property.destroy', $row->id));
+            }
+
+            // Handling interested users
+            $interested_users = array();
+            foreach ($row->interested_users as $interested_user) {
+                if ($interested_user->property_id == $row->id) {
+                    array_push($interested_users, $interested_user->customer_id);
+                }
+            }
+
+            // Price handling based on property type
+            $price = null;
+            if (!empty($row->propery_type) && $row->getRawOriginal('propery_type') == 1) {
+                $price = !empty($row->rentduration) ? $currency_symbol . $row->price . '/' . $row->rentduration : $currency_symbol . $row->price;
+            } else {
+                $price = $currency_symbol . $row->price;
+            }
+
+            // Interested users count and display
+            $count = "  " . count($interested_users);
+            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary edit-icon-btn', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
+
+            // Fill data for the table
+            $tempRow['total_interested_users'] = count($interested_users);
+            $tempRow['edit_status_url'] = 'updatepropertystatus';
+            $tempRow['price'] = $price;
+
+            $featured = count($row->advertisement) ? '<div class="featured_tag"><div class="featured_label">Featured</div></div>' : '';
+            $tempRow['Property_name'] = '<div class="property_name d-flex"><img class="property_image" alt="" src="' . $row->title_image . '"><div class="property_detail"><div class="property_title">' . $row->title . '</div>' . $featured . '</div></div></div>';
+            $tempRow['interested_users'] = $operate1;
+
+            // Add customer details
+            if ($row->added_by != 0) {
+                $tempRow['added_by'] = $row->customer->name;
+                $tempRow['mobile'] = env('DEMO_MODE') ? (Auth::user()->email == 'superadmin@gmail.com' ? $row->customer->mobile : '****************************') : $row->customer->mobile;
+            } else {
+                $mobile = Setting::where('type', 'company_tel1')->pluck('data');
+                $tempRow['added_by'] = trans('Admin');
+                $tempRow['mobile'] = $mobile[0];
+            }
+
+            // Interested user details
+
+            $tempRow['customer_ids'] = $interested_users;
+            foreach ($row->interested_users as $interested_user) {
+                if ($interested_user->property_id == $row->id) {
+                    $tempRow['interested_users_details'] = Customer::where('id', $interested_user->customer_id)->get()->toArray();
+                }
+            }
+
+            // Operation buttons
+            $tempRow['operate'] = $operate;
+            $rows[] = $tempRow;
+        }
+
+        $bulkData['rows'] = $rows;
+
+        // Return the data as JSON response
+        return response()->json($bulkData);
+    }
+
+    public function getPropertyListTrash(Request $request)
     {
         // Pagination and sorting
         $offset = (int) $request->input('offset', 0); // Ensure integer for pagination
@@ -882,7 +1054,7 @@ class PropertController extends Controller
         }
 
         // Fetch the data
-        $res = $sql->get();
+        $res = $sql->where('trash', 1)->get();
 
         // Prepare response
         $bulkData = array();
@@ -925,7 +1097,7 @@ class PropertController extends Controller
 
             // Interested users count and display
             $count = "  " . count($interested_users);
-            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
+            $operate1 = BootstrapTableService::editButton('', true, null, 'text-secondary edit-icon-btn', $row->id, null, '', 'bi bi-eye-fill edit_icon', $count);
 
             // Fill data for the table
             $tempRow['total_interested_users'] = count($interested_users);
@@ -1379,6 +1551,28 @@ class PropertController extends Controller
             return view('property.inactive_property', compact('category'));
         }
     }
+
+    public function trashProperty()
+    {
+        if (!has_permissions('read', 'property')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        } else {
+            $category = Category::all();
+            return view('property.property_trash', compact('category'));
+        }
+    }
+
+    public function updateTrashStatusProperty(Request $request)
+    {
+        $customer = Property::find($request->id);
+        if ($customer) {
+            $customer->trash = $request->trash;
+            $customer->save();
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['success' => false], 400);
+    }
+
     public function export(Request $request)
     {
         // Validate the input data

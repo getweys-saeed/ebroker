@@ -42,7 +42,7 @@
                 <hr>
 
                 {{-- Category --}}
-                <div class="card-body" style="height: 615px;">
+                <div class="card-body" style="height: fit-content">
                     <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('category', __('Category'), ['class' => 'form-label col-12 ']) }}
                         <select name="category" class="choosen-select form-select form-control-sm"
@@ -74,6 +74,16 @@
                             {{ Form::checkbox('featured_property', 1, old('featured_property', isset($list->featured_property) ? $list->featured_property : false), ['class' => 'form-check-input', 'id' => 'featured_property']) }}
                             <label class="form-check-label" for="featured_property">{{ __('Featured Property') }}</label>
                         </div>
+                    </div>
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('square_yd', __('Square Yard'), ['class' => 'form-label col-12 ']) }}
+                        {{ Form::text('square_yd', isset($list->square_yd) ? $list->square_yd : '',  [
+                            'class' => 'form-control ',
+                            'name' => 'square_yd',
+                            'placeholder' => __('Square Yard'),
+                            'required' => 'true',
+                            'id' => 'square_yd',
+                        ]) }}
                     </div>
                     {{-- <p> {{ $list }}s</p> --}}
 
@@ -470,6 +480,27 @@
                                 value=" {{ $list->is_premium ? 1 : 0 }}">
                             <input class="form-check-input" type="checkbox" role="switch"
                                 {{ $list->is_premium ? 'checked' : '' }} id="is_premium_switch">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card">
+                <h3 class="card-header">{{ __('Property Contact') }}</h3>
+                <hr>
+                <div class="card-body">
+                    <div class="col-sm-12 col-md-12  col-xs-12 ">
+                        {{-- Title --}}
+                        <div class="col-md-12 col-12 form-group mandatory">
+                            {{ Form::label('whatsapp_number', __('WhatsApp'), ['class' => 'form-label col-12 ']) }}
+                            {{ Form::text('whatsapp_number', isset($list->whatsapp_number) ? $list->whatsapp_number : '', [
+                                'class' => 'form-control ',
+                                'name' => 'whatsapp_number',
+                                'placeholder' => __('WhatsApp'),
+                                'required' => 'true',
+                                'id' => 'title',
+                            ]) }}
                         </div>
                     </div>
                 </div>

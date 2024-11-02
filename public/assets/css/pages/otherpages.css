@@ -1956,17 +1956,37 @@
       border: none;
   }
 
+  .edit_btn.active {
+    background-color: var(--primary-color); /* Change background color when active */
+    color: white; /* Change text color when active */
 
+}
+
+.edit-icon-btn.active {
+    background-color: #4CAF50; /* Example: Change background color when active */
+    color: white; /* Example: Change text color when active */
+    border-color: #4CAF50; /* Optional: border styling */
+}
 
   .edit_btn {
-      background-color: var(--primary-rgba);
+    background-color: white;
       border: none;
   }
 
   .edit_btn:hover {
-      background-color: var(--primary-rgba);
+      background-color: white;
       border: none;
   }
+
+  .edit_btn:focus {
+
+    box-shadow: var(--bs-btn-focus-box-shadow);
+    background-color: white;
+    /* outline: 0; */
+    outline-color:var(--bs-btn-focus-box-shadow) ;
+} .edit_btn:focus .bi-eye-fill:after {
+    color: black;
+}
 
 
   .delete_icon {

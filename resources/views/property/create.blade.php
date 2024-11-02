@@ -42,7 +42,8 @@
                 <div class="card-body">
                     <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('category', __('Category'), ['class' => 'form-label col-12 ']) }}
-                        <select name="category" class="form-select form-control-sm" data-parsley-minSelect='1' id="category" required>
+                        <select name="category" class="form-select form-control-sm" data-parsley-minSelect='1'
+                            id="category" required>
                             <option value="" selected>{{ __('Choose Category') }}</option>
                             @foreach ($category as $row)
                                 <option value="{{ $row->id }}" data-parametertypes='{{ $row->parameter_types }}'>
@@ -57,7 +58,7 @@
                         {{ Form::label('title', __('Title'), ['class' => 'form-label col-12 ']) }}
                         {{ Form::text('title', '', [
                             'class' => 'form-control ',
-                            'placeholder' =>  __('Title'),
+                            'placeholder' => __('Title'),
                             'required' => 'true',
                             'id' => 'title',
                         ]) }}
@@ -71,7 +72,17 @@
                             'rows' => '5',
                             'id' => '',
                             'required' => 'true',
-                            'placeholder' => __('Description')
+                            'placeholder' => __('Description'),
+                        ]) }}
+                    </div>
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('square_yd', __('Square Yard'), ['class' => 'form-label col-12 ']) }}
+                        {{ Form::text('square_yd', '', [
+                            'class' => 'form-control ',
+                            'name' => 'square_yd',
+                            'placeholder' => __('Square Yard'),
+                            'required' => 'true',
+                            'id' => 'square_yd',
                         ]) }}
                     </div>
 
@@ -79,25 +90,36 @@
                         {{ Form::label('property_type', __('Property Type'), ['class' => 'form-label col-12']) }}
 
                         <div class="form-check">
-                            {{ Form::radio('property_type', 0, (isset($list->property_type) && $list->property_type == 0), ['class' => 'form-check-input', 'id' => 'commercial']) }}
+                            {{ Form::radio('property_type', 0, isset($list->property_type) && $list->property_type == 0, ['class' => 'form-check-input', 'id' => 'commercial']) }}
                             <label class="form-check-label" for="commercial">{{ __('Commercial') }}</label>
                         </div>
 
                         <div class="form-check">
-                            {{ Form::radio('property_type', 1, (isset($list->property_type) && $list->property_type == 1), ['class' => 'form-check-input', 'id' => 'residential']) }}
+                            {{ Form::radio('property_type', 1, isset($list->property_type) && $list->property_type == 1, ['class' => 'form-check-input', 'id' => 'residential']) }}
                             <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
                         </div>
                     </div>
 
 
+
+
                     {{-- Duration --}}
                     <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('Duration', __('Duration For Price'), ['class' => 'form-label col-12 ']) }}
-                        <select name="price_duration" id="price_duration" class="choosen-select form-select form-control-sm" data-parsley-minSelect='1'>
-                            <option value="Daily" {{ old('price_duration', $item->price_duration ?? '') == 'Daily' ? 'selected' : '' }}>Daily</option>
-                            <option value="Monthly" {{ old('price_duration', $item->price_duration ?? '') == 'Monthly' ? 'selected' : '' }}>Monthly</option>
-                            <option value="Yearly" {{ old('price_duration', $item->price_duration ?? '') == 'Yearly' ? 'selected' : '' }}>Yearly</option>
-                            <option value="Quarterly" {{ old('price_duration', $item->price_duration ?? '') == 'Quarterly' ? 'selected' : '' }}>Quarterly</option>
+                        <select name="price_duration" id="price_duration" class="choosen-select form-select form-control-sm"
+                            data-parsley-minSelect='1'>
+                            <option value="Daily"
+                                {{ old('price_duration', $item->price_duration ?? '') == 'Daily' ? 'selected' : '' }}>Daily
+                            </option>
+                            <option value="Monthly"
+                                {{ old('price_duration', $item->price_duration ?? '') == 'Monthly' ? 'selected' : '' }}>
+                                Monthly</option>
+                            <option value="Yearly"
+                                {{ old('price_duration', $item->price_duration ?? '') == 'Yearly' ? 'selected' : '' }}>
+                                Yearly</option>
+                            <option value="Quarterly"
+                                {{ old('price_duration', $item->price_duration ?? '') == 'Quarterly' ? 'selected' : '' }}>
+                                Quarterly</option>
                         </select>
                     </div>
 
@@ -111,7 +133,7 @@
                             'required' => 'true',
                             'min' => '1',
                             'id' => 'price',
-                            'max' => '1000000000000'
+                            'max' => '1000000000000',
                         ]) }}
                     </div>
 
@@ -135,7 +157,9 @@
                     {{-- SEO Title --}}
                     <div class="col-md-6 col-sm-12 form-group">
                         {{ Form::label('title', __('Title'), ['class' => 'form-label text-center']) }}
-                        <textarea id="meta_title" name="meta_title" class="form-control" oninput="getWordCount('meta_title','meta_title_count','12.9px arial')" rows="2" style="height: 75px" placeholder="{{ __('Title') }}"></textarea>
+                        <textarea id="meta_title" name="meta_title" class="form-control"
+                            oninput="getWordCount('meta_title','meta_title_count','12.9px arial')" rows="2" style="height: 75px"
+                            placeholder="{{ __('Title') }}"></textarea>
                         <br>
                         <h6 id="meta_title_count">0</h6>
                     </div>
@@ -143,14 +167,17 @@
                     {{-- SEO Image --}}
                     <div class="col-md-6 col-sm-12 form-group card">
                         {{ Form::label('image', __('Image'), ['class' => 'form-label']) }}
-                        <input type="file" name="meta_image" id="meta_image" class="filepond from-control" placeholder="{{ __('Image') }}">
+                        <input type="file" name="meta_image" id="meta_image" class="filepond from-control"
+                            placeholder="{{ __('Image') }}">
                         <div class="img_error"></div>
                     </div>
 
                     {{-- SEO Description --}}
                     <div class="col-md-12 col-sm-12 form-group">
                         {{ Form::label('description', __('Description'), ['class' => 'form-label text-center']) }}
-                        <textarea id="meta_description" name="meta_description" class="form-control" oninput="getWordCount('meta_description','meta_description_count','12.9px arial')" rows="3" placeholder="{{ __('Description') }}"></textarea>
+                        <textarea id="meta_description" name="meta_description" class="form-control"
+                            oninput="getWordCount('meta_description','meta_description_count','12.9px arial')" rows="3"
+                            placeholder="{{ __('Description') }}"></textarea>
                         <br>
                         <h6 id="meta_description_count">0</h6>
                     </div>
@@ -221,7 +248,8 @@
                                 <div class="col-md-12 col-12 form-group mandatory">
                                     {{ Form::label('city', __('City'), ['class' => 'form-label col-12 ']) }}
                                     {!! Form::hidden('city', '', ['class' => 'form-control ', 'id' => 'city']) !!}
-                                    <input id="searchInput" class="controls form-control" type="text" placeholder="{{ __('City') }}" required>
+                                    <input id="searchInput" class="controls form-control" type="text"
+                                        placeholder="{{ __('City') }}" required>
                                     {{-- {{ Form::text('city', '', ['class' => 'form-control ', 'placeholder' => 'City', 'id' => 'city', 'required' => true]) }} --}}
                                 </div>
                                 <div class="col-md-6 form-group mandatory">
@@ -234,15 +262,29 @@
                                 </div>
                                 <div class="col-md-6 form-group mandatory">
                                     {{ Form::label('latitude', __('Latitude'), ['class' => 'form-label col-12 ']) }}
-                                    {!! Form::text('latitude', '', ['class' => 'form-control', 'id' => 'latitude', 'step' => 'any', 'readonly' => true, 'required' => true, 'placeholder' => trans('Latitude')]) !!}
+                                    {!! Form::text('latitude', '', [
+                                        'class' => 'form-control',
+                                        'id' => 'latitude',
+                                        'step' => 'any',
+                                        'readonly' => true,
+                                        'required' => true,
+                                        'placeholder' => trans('Latitude'),
+                                    ]) !!}
                                 </div>
                                 <div class="col-md-6 form-group mandatory">
                                     {{ Form::label('longitude', __('Longitude'), ['class' => 'form-label col-12 ']) }}
-                                    {!! Form::text('longitude', '', ['class' => 'form-control', 'id' => 'longitude', 'step' => 'any', 'readonly' => true, 'required' => true, 'placeholder' => trans('Longitude')]) !!}
+                                    {!! Form::text('longitude', '', [
+                                        'class' => 'form-control',
+                                        'id' => 'longitude',
+                                        'step' => 'any',
+                                        'readonly' => true,
+                                        'required' => true,
+                                        'placeholder' => trans('Longitude'),
+                                    ]) !!}
                                 </div>
                                 <div class="col-md-12 col-12 form-group mandatory">
                                     {{ Form::label('address', 'Client Address', ['class' => 'form-label col-12 ']) }}
-                                    {{ Form::textarea('client_address', system_setting('company_address') ?? "", [
+                                    {{ Form::textarea('client_address', system_setting('company_address') ?? '', [
                                         'class' => 'form-control ',
                                         'placeholder' => 'Client Address',
                                         'rows' => '4',
@@ -284,8 +326,8 @@
                                 <div class="col-md-6 col-sm-12  form-group mandatory card title_card">
                                     {{ Form::label('title_image', __('Title Image'), ['class' => 'form-label col-12 ']) }}
 
-                                    <input type="file" class="filepond" id="filepond_title" name="title_image" accept="image/jpg,image/png,image/jpeg"
-                                        required>
+                                    <input type="file" class="filepond" id="filepond_title" name="title_image"
+                                        accept="image/jpg,image/png,image/jpeg" required>
                                 </div>
 
                                 <div class="col-md-6 col-sm-12 card">
@@ -327,6 +369,28 @@
         </div>
         <div class="col-md-12">
             <div class="card">
+                <h3 class="card-header">{{ __('Property Contact') }}</h3>
+                <hr>
+                <div class="card-body">
+                    <div class="col-sm-12 col-md-12  col-xs-12 ">
+                        {{-- Title --}}
+                        <div class="col-md-12 col-12 form-group mandatory">
+                            {{ Form::label('whatsapp_number', __('WhatsApp'), ['class' => 'form-label col-12 ']) }}
+                            {{ Form::text('whatsapp_number', '', [
+                                'class' => 'form-control ',
+                                'name' => 'whatsapp_number',
+                                'placeholder' => __('WhatsApp'),
+                                'required' => 'true',
+                                'id' => 'title',
+                            ]) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-12">
+            <div class="card">
                 <h3 class="card-header">{{ __('accessibility') }}</h3>
                 <hr>
                 <div class="card-body">
@@ -356,7 +420,9 @@
     {!! Form::close() !!}
 @endsection
 @section('script')
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key={{ env('PLACE_API_KEY') }}&callback=initMap" async defer></script>
+    <script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?libraries=places&key={{ env('PLACE_API_KEY') }}&callback=initMap"
+        async defer></script>
     <script type="text/javascript">
         $(document).ready(function() {
             // $("#category").val($("#category option:first").val()).trigger('change');
