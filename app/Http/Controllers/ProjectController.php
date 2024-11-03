@@ -6,11 +6,19 @@ use App\Models\Customer;
 use App\Models\Notifications;
 use App\Models\Projects;
 use App\Models\Setting;
+use App\Models\UserPurchasedPackage;
 use App\Models\Usertokens;
 use App\Models\Category;
+use App\Models\ProjectDocuments;
+use App\Models\ProjectPlans;
 use App\Services\BootstrapTableService;
 use App\Services\ResponseService;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
 
 class ProjectController extends Controller
 {
@@ -22,8 +30,8 @@ class ProjectController extends Controller
     public function index()
     {
         //
-         $category = Category::all();
-        return \view('project.index',compact('category'));
+        $category = Category::all();
+        return \view('project.index', compact('category'));
     }
 
     /**
@@ -31,10 +39,14 @@ class ProjectController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        
+        return view("project.create");
+
     }
+
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -44,7 +56,136 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'property_type' => 'required',
+            'square_yd' => 'required',
+            'description' => 'required',
+            'image' => 'required|file|max:3000|mimes:jpeg,png,jpg',
+            'category_id' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'country' => 'required',
+            // Add any additional validation rules for new fields as necessary
+        ]);
+
+        // If validation fails, redirect back with errors
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+            $currentUser = Auth::id();
+
+            // Check if the project exists and belongs to the current user
+            $project = Projects::where('added_by', $currentUser)->find($request->id);
+
+            if (!$project) {
+                $project = new Projects();
+                $project->added_by = $currentUser;
+            }
+
+            // Update project details
+            $project->title = $request->title;
+            $project->description = $request->description;
+            $project->category_id = $request->category_id;
+            $project->city = $request->city;
+            $project->state = $request->state;
+            $project->country = $request->country;
+
+            // Image handling
+            if ($request->hasFile('image')) {
+                $project->image = store_image($request->file('image'), 'PROJECT_TITLE_IMG_PATH');
+            }
+
+            // Handle any additional fields
+            if ($request->has('meta_title')) {
+                $project->meta_title = $request->meta_title;
+            }
+            if ($request->has('meta_description')) {
+                $project->meta_description = $request->meta_description;
+            }
+            if ($request->has('meta_keywords')) {
+                $project->meta_keywords = $request->meta_keywords;
+            }
+            if ($request->has('latitude')) {
+                $project->latitude = $request->latitude;
+            }
+            if ($request->has('longitude')) {
+                $project->longitude = $request->longitude;
+            }
+            if ($request->has('video_link')) {
+                $project->video_link = $request->video_link;
+            }
+            if ($request->has('type')) {
+                $project->type = $request->type;
+            }
+
+            // Saving project
+            $project->save();
+
+            // Handle gallery images if provided
+            if ($request->hasfile('gallery_images')) {
+                foreach ($request->file('gallery_images') as $file) {
+                    $gallery_image = new ProjectDocuments();
+                    $gallery_image->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
+                    $gallery_image->project_id = $project->id;
+                    $gallery_image->type = 'image';
+                    $gallery_image->save();
+                }
+            }
+
+            // Handle project documents if provided
+            if ($request->hasfile('documents')) {
+                foreach ($request->file('documents') as $file) {
+                    $project_documents = new ProjectDocuments();
+                    $project_documents->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
+                    $project_documents->project_id = $project->id;
+                    $project_documents->type = 'doc';
+                    $project_documents->save();
+                }
+            }
+
+            // Handle plans if provided
+            if ($request->plans) {
+                foreach ($request->plans as $plan) {
+                    if (isset($plan['id']) && $plan['id'] != '') {
+                        $project_plan = ProjectPlans::find($plan['id']);
+                    } else {
+                        $project_plan = new ProjectPlans();
+                    }
+
+                    // Store document if provided
+                    if (isset($plan['document'])) {
+                        $project_plan->document = store_image($plan['document'], 'PROJECT_DOCUMENT_PATH');
+                    }
+
+                    $project_plan->title = $plan['title'];
+                    $project_plan->project_id = $project->id;
+                    $project_plan->save();
+                }
+            }
+
+            // Handle removal of plans
+            if ($request->remove_plans) {
+                $remove_plans = explode(',', $request->remove_plans);
+                foreach ($remove_plans as $value) {
+                    $project_plan = ProjectPlans::find($value);
+                    if ($project_plan) {
+                        unlink_image($project_plan->document);
+                        $project_plan->delete();
+                    }
+                }
+            }
+
+            // Commit the transaction
+            DB::commit();
+            return redirect()->back()->with('success', isset($request->id) ? 'Project Updated Successfully' : 'Project Posted Successfully');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Something went wrong');
+        }
     }
 
     /**
@@ -97,7 +238,7 @@ class ProjectController extends Controller
         $currency_symbol = Setting::where('type', 'currency_symbol')->pluck('data')->first();
 
         foreach ($res as $row) {
-                       $action = BootstrapTableService::editButton('', true, null, null, $row->id, null, '', 'bi bi-eye edit_icon');
+            $action = BootstrapTableService::editButton('', true, null, null, $row->id, null, '', 'bi bi-eye edit_icon');
 
             $tempRow = $row->toArray();
             $tempRow['edit_status_url'] = 'updateProjectStatus';
@@ -147,7 +288,7 @@ class ProjectController extends Controller
         //
     }
 
- public function updateStatus(Request $request)
+    public function updateStatus(Request $request)
     {
         if (!has_permissions('delete', 'projects')) {
             ResponseService::errorResponse(PERMISSION_ERROR_MSG);

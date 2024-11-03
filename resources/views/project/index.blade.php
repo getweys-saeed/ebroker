@@ -9,10 +9,14 @@
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
                 <h4>@yield('title')</h4>
-
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
-
+                <div class=" d-flex me-2 justify-content-end">
+                    {!! Form::open(['route' => 'project.create']) !!}
+                    {{ method_field('get') }}
+                    {{ Form::submit(__('Add Industry'), ['class' => 'btn btn-primary ']) }}
+                    {!! Form::close() !!}
+                </div>
             </div>
         </div>
     </div>
