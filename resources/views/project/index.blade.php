@@ -55,24 +55,38 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <table class="table table-striped"
-                            id="table_list" data-toggle="table" data-url="{{ route('project.show', 1) }}"
-                            data-click-to-select="true" data-side-pagination="server" data-pagination="true"
+                        <table class="table table-striped" id="table_list" data-toggle="table"
+                            data-url="{{ route('project.show', 1) }}" data-click-to-select="true"
+                            data-side-pagination="server" data-pagination="true"
                             data-page-list="[5, 10, 20, 50, 100, 200,All]" data-search="true" data-search-align="right"
                             data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true"
                             data-trim-on-search="false" data-responsive="true" data-sort-name="id" data-sort-order="desc"
                             data-pagination-successively-size="3" data-query-params="queryParams">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th scope="col" data-field="id" data-align="center" data-sortable="true"> {{ __('ID') }}</th>
-                                    <th scope="col" data-field="customer.name" data-align="center" data-sortable="false"> {{ __('Client Name') }}</th>
-                                    <th scope="col" data-field="customer.mobile" data-align="center" data-sortable="false"> {{ __('Mobile') }} </th>
-                                    <th scope="col" data-field="title" data-align="center" data-sortable="false">Title </th>
-                                    <th scope="col" data-field="category.category" data-align="center" data-sortable="true"> {{ __('Category') }}</th>
-                                    <th scope="col" data-field="type" data-align="center" data-sortable="true"> {{ __('Type') }}</th>
-                                    <th scope="col" data-field="image" data-align="center" data-formatter="imageFormatter" data-sortable="false"> {{ __('Image') }}</th>
-                                    <th scope="col" data-field="status" data-sortable="false" data-align="center" data-formatter="enableDisableSwitchFormatter" data-width="5%"> {{ __('Enable/Disable') }}</th>
-                                    <th scope="col" data-field="action" data-align="center" data-sortable="false" data-events="actionEvents"> {{ __('Documents/Images') }}</th>
+                                    <th scope="col" data-field="id" data-align="center" data-sortable="true">
+                                        {{ __('ID') }}</th>
+                                    <th scope="col" data-field="customer_name" data-align="center" data-sortable="false">
+                                        {{ __('Client Name') }}</th>
+                                    <th scope="col" data-field="customer_mobile" data-align="center"
+                                        data-sortable="false"> {{ __('Mobile') }} </th>
+                                    <th scope="col" data-field="title" data-align="center" data-sortable="false">Title
+                                    </th>
+                                    <th scope="col" data-field="category.category" data-align="center"
+                                        data-sortable="true"> {{ __('Category') }}</th>
+                                    <th scope="col" data-field="square_yd" data-align="center" data-sortable="false">
+                                        {{ __('Square Yard') }}</th> <!-- Add this line -->
+                                    <th scope="col" data-field="price" data-align="center" data-sortable="false">
+                                        {{ __('Price') }}</th> <!-- Add this line -->
+                                    <th scope="col" data-field="type" data-align="center" data-sortable="true"
+                                        data-formatter="typeFormatter"> {{ __('Type') }}</th>
+                                    <th scope="col" data-field="image" data-align="center"
+                                        data-formatter="imageFormatter" data-sortable="false"> {{ __('Image') }}</th>
+                                    <th scope="col" data-field="status" data-sortable="false" data-align="center"
+                                        data-formatter="enableDisableSwitchFormatter" data-width="5%">
+                                        {{ __('Enable/Disable') }}</th>
+                                    <th scope="col" data-field="action" data-align="center" data-sortable="false"
+                                        data-events="actionEvents"> {{ __('Documents/Images') }}</th>
                                 </tr>
                             </thead>
                         </table>
@@ -115,6 +129,16 @@
 
 @section('script')
     <script>
+        // Define the type formatter function
+        function typeFormatter(value) {
+            const typeMap = {
+                '0': 'Underprocess',
+                '1': 'Upcoming'
+            };
+            return typeMap[value] || 'Unknown'; // Fallback for undefined values
+        }
+    </script>
+    <script>
         $('#status').on('change', function() {
             $('#table_list').bootstrapTable('refresh');
 
@@ -134,6 +158,7 @@
             if (params.get('type') != 'null') {
                 $('#type').val(params.get('type'));
             }
+            console.log(row.document);
         });
 
 
@@ -156,64 +181,92 @@
                 $('.documents').empty();
                 $('.plans').empty();
 
-                if(row.gallary_images.length){
+                if (row.gallary_images.length) {
                     $.each(row.gallary_images, function(key, value) {
-                        $('.gallary_images').append(
-                            `<div class="col-sm-12 col-md-3 col-lg-2 mt-1 ml-1">
-                                <a href="${value.name}" target="_blank">
-                                    <img src="${value.name}"height="100" width="100" class="rounded"/>
-                                </a>
-                            </div>`
-                        );
+                        // Check if the type is 'image'
+                        if (value.type === 'image') {
+                            $('.gallary_images').append(
+                                `<div class="col-sm-12 col-md-3 col-lg-2 mt-1 ml-1">
+                    <a href="${value.name}" target="_blank">
+                        <img src="${value.name}" height="100" width="100" class="rounded"/>
+                    </a>
+                </div>`
+                            );
+                        }
                     });
-                }else{
+
+                    // If no image elements are added, display "No Data Found"
+                    if (!$('.gallary_images').children().length) {
+                        $('.gallary_images').append(
+                            `<span class="no-data-found-span">
+                ${window.trans["No Data Found"]}
+            </span>`
+                        );
+                    }
+                } else {
                     $('.gallary_images').append(
                         `<span class="no-data-found-span">
-                            ${window.trans["No Data Found"]}
-                        </span>`
+            ${window.trans["No Data Found"]}
+        </span>`
                     );
                 }
 
-                if(row.documents.length){
+                if (row.documents.length) {
                     $.each(row.documents, function(key, value) {
-                        var url = value.name; // Your URL
-                        var filename = url.split('/').pop();
-                        var documentSvgImage = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="30" width="30" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M208 64h66.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62V432a48 48 0 01-48 48H192a48 48 0 01-48-48V304"></path><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M288 72v120a32 32 0 0032 32h120"></path><path fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M160 80v152a23.69 23.69 0 01-24 24c-12 0-24-9.1-24-24V88c0-30.59 16.57-56 48-56s48 24.8 48 55.38v138.75c0 43-27.82 77.87-72 77.87s-72-34.86-72-77.87V144"></path></svg>`;
-                        var downloadImg = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path d="m12 16 4-5h-3V4h-2v7H8z"></path><path d="M20 18H4v-7H2v7c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2v-7h-2v7z"></path></svg>`;
+                        // Check if the type is 'doc'
+                        if (value.type === 'doc') {
+                            var url = value.name; // Your URL
+                            var filename = url.split('/').pop();
+                            var documentSvgImage =
+                                `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="30" width="30" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M208 64h66.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62V432a48 48 0 01-48 48H192a48 48 0 01-48-48V304"></path><path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M288 72v120a32 32 0 0032 32h120"></path><path fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M160 80v152a23.69 23.69 0 01-24 24c-12 0-24-9.1-24-24V88c0-30.59 16.57-56 48-56s48 24.8 48 55.38v138.75c0 43-27.82 77.87-72 77.87s-72-34.86-72-77.87V144"></path></svg>`;
+                            var downloadImg =
+                                `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path d="m12 16 4-5h-3V4h-2v7H8z"></path><path d="M20 18H4v-7H2v7c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2v-7h-2v7z"></path></svg>`;
 
-                        $('.documents').append(
-                            `<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3 mt-2">
-                                <div class="docs_main_div">
-                                    <div class="doc_icon">
-                                        ${documentSvgImage}
-                                    </div>
-                                    <div class="doc_title">
-                                        <span title="${filename}">${filename}</span>
-                                    </div>
-                                    <div class="doc_download_button">
-                                        <a href="${url}" target="_blank">
-                                            <span>
-                                                ${downloadImg}
-                                            </span>
-                                            <span>Donwload</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>`
-                        );
+                            $('.documents').append(
+                                `<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3 mt-2">
+                    <div class="docs_main_div">
+                        <div class="doc_icon">
+                            ${documentSvgImage}
+                        </div>
+                        <div class="doc_title">
+                            <span title="${filename}">${filename}</span>
+                        </div>
+                        <div class="doc_download_button">
+                            <a href="${url}" target="_blank">
+                                <span>
+                                    ${downloadImg}
+                                </span>
+                                <span>Download</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>`
+                            );
+                        }
                     });
-                }else{
+
+                    // If no document elements are added, display "No Data Found"
+                    if (!$('.documents').children().length) {
+                        $('.documents').append(
+                            `<span class="no-data-found-span">
+                ${window.trans["No Data Found"]}
+            </span>`
+                        );
+                    }
+                } else {
                     $('.documents').append(
                         `<span class="no-data-found-span">
-                            ${window.trans["No Data Found"]}
-                        </span>`
+            ${window.trans["No Data Found"]}
+        </span>`
                     );
                 }
 
 
-                if(row.plans.length){
+
+                if (row.plans.length) {
                     $.each(row.plans, function(key, value) {
                         var url = value.title; // Your URL
+                        console.log(value.title)
 
                         $('.plans').append(
                             `<div class="accordion col-6">
@@ -228,7 +281,7 @@
                             </div>`
                         );
                     });
-                }else{
+                } else {
                     $('.plans').append(
                         `<span class="no-data-found-span">
                             ${window.trans["No Data Found"]}

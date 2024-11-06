@@ -32,14 +32,16 @@ return new class extends Migration
             $table->string('city');
             $table->string('state');
             $table->string('country');
+            $table->tinyInteger('added_by')->default(0);
 
             $table->string('type')->comment('under_process,upcoming');
 
             $table->timestamps();
-            $table->foreignId('added_by')->references('id')->on('customers')->onDelete('cascade');
-            $table->foreignId('category_id')->references('id')->on('categories')->onDelete('cascade');
+
+            $table->foreignId('category_id')->references('id')->on('projectcategories')->onDelete('cascade');
         });
     }
+
 
     /**
      * Reverse the migrations.

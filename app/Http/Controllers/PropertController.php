@@ -140,7 +140,7 @@ class PropertController extends Controller
                 $Saveproperty->meta_image = store_image($request->file('meta_image'), 'PROPERTY_SEO_IMG_PATH');
             }
             if ($request->hasFile('document')) {
-                $Saveproperty->document = store_image($request->file('document'), 'PROJECT_Documnet_PATH');
+                $Saveproperty->document = store_image($request->file('document'), 'PROPERTY_PATH');
             } else {
                 $Saveproperty->document  = '';
             }
@@ -325,7 +325,7 @@ class PropertController extends Controller
             if ($request->hasFile('document')) {
                 \unlink_image($UpdateProperty->document);
 
-                $UpdateProperty->document = \store_image($request->file('document'), 'PROJECT_Documnet_PATH');
+                $UpdateProperty->document = \store_image($request->file('document'), 'PROPERTY_PATH');
             }
 
 

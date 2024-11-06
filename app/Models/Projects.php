@@ -13,12 +13,18 @@ class Projects extends Model
 
     public function category()
     {
-        return $this->hasOne(Category::class, 'id', 'category_id')->select('id', 'category', 'parameter_types', 'image');
+        return $this->hasOne(ProjectCategory::class, 'id', 'category_id')->select('id', 'category', 'parameter_types', 'image');
     }
+
     public function customer()
     {
         return $this->hasOne(Customer::class, 'id', 'added_by');
     }
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id', 'added');
+    }
+
     public function gallary_images()
     {
         return $this->hasMany(ProjectDocuments::class, 'project_id')->where('type', 'image');

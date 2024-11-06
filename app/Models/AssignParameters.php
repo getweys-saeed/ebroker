@@ -9,17 +9,19 @@ class AssignParameters extends Model
 {
     use HasFactory;
 
+
     protected $table = 'assign_parameters';
 
-    protected $fillable = [
+    protected $fillable = ['parameter_id', 'project_id', 'value']; // Ensure these match your table fields
 
-        'modal_id',
-
-    ];
 
     public function modal()
     {
         return $this->morphTo();
+    }
+    public function project()
+    {
+        return $this->belongsTo(Projects::class, 'project_id');
     }
     public function parameter()
     {

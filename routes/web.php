@@ -28,6 +28,8 @@ use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\AdvertisementController;
 use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\OutdoorFacilityController;
+use App\Http\Controllers\ProjectCategory;
+use App\Http\Controllers\ProjectCategoryController;
 use App\Http\Controllers\PropertysInquiryController;
 use App\Models\Customer;
 use App\Models\Property;
@@ -375,6 +377,17 @@ Route::middleware(['language'])->group(function () {
         Route::get('calculator', function () {
             return view('Calculator.calculator');
         });
+
+        // Project Category
+        Route::get('project-category', [ProjectCategoryController::class, 'categoryindex'])->name('project_category.index');
+        Route::post('project-category-store', [ProjectCategoryController::class, 'categorystore'])->name('project_category.store');
+        Route::get('project-category-list', [ProjectCategoryController::class, 'categoryList'])->name('project_category_list');
+        Route::post('project-category-update', [ProjectCategoryController::class, 'categoryupdate'])->name('project_category.update');
+        Route::post('project-category-status', [ProjectCategoryController::class, 'updateCategory'])->name('project_category.status');
+        Route::get('project-category-delete/{id}', [ProjectCategoryController::class, 'destroy'])->name("project_category.delete");
+       
+
+
     });
 });
 

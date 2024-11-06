@@ -34,10 +34,10 @@ class ViewServiceProvider extends ServiceProvider {
             }else{
                 $cache = app(CachingService::class);
                 $defaultLanguage = $cache->getDefaultLanguage();
-                Session::put('language', $defaultLanguage);
-                Session::put('locale', $defaultLanguage->code);
+                // Session::put('language', $defaultLanguage);
+                // Session::put('locale', $defaultLanguage->code);
                 Session::save();
-                app()->setLocale($defaultLanguage->code);
+                // app()->setLocale($defaultLanguage->code);
                 Artisan::call('cache:clear');
                 $view->with('language', $cache->getDefaultLanguage());
             }
@@ -47,9 +47,9 @@ class ViewServiceProvider extends ServiceProvider {
             $cache = app(CachingService::class);
                 $defaultLanguage = $cache->getDefaultLanguage();
                 Session::put('language', $defaultLanguage);
-                Session::put('locale', $defaultLanguage->code);
+                // Session::put('locale', $defaultLanguage->code);
                 Session::save();
-                app()->setLocale($defaultLanguage->code);
+                // app()->setLocale($defaultLanguage->code);
                 Artisan::call('cache:clear');
                 $view->with('language', $cache->getDefaultLanguage());
         });
