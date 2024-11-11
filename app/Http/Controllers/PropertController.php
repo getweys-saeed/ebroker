@@ -20,15 +20,16 @@ use App\Models\PropertyImages;
 use App\Models\PropertysInquiry;
 use App\Models\Setting;
 use App\Models\Slider;
-
+use App\Models\PropertyBoost;
 use App\Models\Usertokens;
 use App\Services\BootstrapTableService;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class PropertController extends Controller
 {
@@ -820,6 +821,7 @@ class PropertController extends Controller
             ->with('assignParameter.parameter')
             ->with('interested_users')
             ->with('advertisement')
+            ->with('PropertyBoost')
             ->orderBy($sort, $order);
 
         // Filter inputs
@@ -931,7 +933,7 @@ class PropertController extends Controller
             $tempRow['total_interested_users'] = count($interested_users);
             $tempRow['edit_status_url'] = 'updatepropertystatus';
             $tempRow['price'] = $price;
-
+            $tempRow['details'] = $row;
             $featured = count($row->advertisement) ? '<div class="featured_tag"><div class="featured_label">Featured</div></div>' : '';
             $tempRow['Property_name'] = '<div class="property_name d-flex"><img class="property_image" alt="" src="' . $row->title_image . '"><div class="property_detail"><div class="property_title">' . $row->title . '</div>' . $featured . '</div></div></div>';
             $tempRow['interested_users'] = $operate1;
@@ -965,6 +967,85 @@ class PropertController extends Controller
         // Return the data as JSON response
         return response()->json($bulkData);
     }
+    public function storeAds(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'property_id' => 'required|exists:propertys,id',
+            'customer_id' => 'required|exists:customers,id',
+            'days' => 'required|integer|min:1', // Number of days for the advertisement
+            'price' => 'required|numeric|min:0',
+            'payment_getweys' => 'required',
+            'order_id' => 'required|integer',
+            'payment_screenshot' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'payment_detail' => 'nullable|string',
+        ]);
+    
+        if ($validated->fails()) {
+            return response()->json([
+                "error" => true,
+                "message" => $validated->errors()->first(),
+            ]);
+        }
+        
+        // Get current date and time
+        $startDate = now(); 
+        // Calculate the end date by adding the number of days to the start date
+        $endDate = now()->addDays($request->days); 
+        
+        // Path for payment screenshot (if provided)
+        $paymentScreenshotPath = 'images/invoice/';
+        $destinationPath = public_path($paymentScreenshotPath);
+        
+        // Default image name
+        $defaultImage = 'noImg.png';
+        $imageName = $defaultImage;
+        
+        // Check if a file was uploaded
+        if ($request->hasFile('payment_screenshot')) {
+            // Create the directory if it doesn’t exist
+            if (!is_dir($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+            
+            // Retrieve the file and create a unique name
+            $file = $request->file('payment_screenshot');
+            $imageName = microtime(true) . '.' . $file->getClientOriginalExtension();
+            
+            // Move the uploaded file to the destination path
+            $file->move($destinationPath, $imageName);
+        }
+        
+        // Create the property boost entry
+        $ads = PropertyBoost::create([
+            'property_id' => $request->property_id,
+            'customer_id' => $request->customer_id,
+            'start_date' => $startDate, // Store current date and time as start date
+            'end_date' => $endDate, // Calculate end date
+            'price' => $request->price,
+            'payment_getwey' => $request->payment_getweys, // Ensure correct gateway value is stored
+            'order_id' => $request->order_id,
+            'payment_screenshot' => $paymentScreenshotPath . $imageName, // Save the image path
+            'payment_detail' => $request->payment_detail,
+            'is_payed' => false, // Initially false until payment is verified
+        ]);
+    
+        // Check if the property boost was successfully created
+        if ($ads) {
+            return response()->json([
+                'error' => false,
+                'message' => "Property Boosted successfully."
+            ]);
+        } else {
+            Log::error("Failed to Boost Property");
+            return response()->json([
+                'error' => true,
+                'message' => "Failed to update property feature status."
+            ]);
+        }
+    }
+    
+    
+    
 
     public function updateFeatureStatus(Request $request)
     {

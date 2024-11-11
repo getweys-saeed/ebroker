@@ -89,6 +89,11 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(Favourite::class, 'user_id');
     }
+    public function PropertyBoost()
+    {
+        return $this->hasMany(PropertyBoost::class, 'customer_id');
+    }
+   
     public function property()
     {
         return $this->hasMany(Property::class, 'added_by');

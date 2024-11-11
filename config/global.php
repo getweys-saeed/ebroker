@@ -2,6 +2,7 @@
 
 return [
     'CATEGORY_IMG_PATH' => '/category/',
+    'Invoice_IMG_PATH' => '/invoice/',
     "PROJECT_Documnet_PATH" => '/property_document/',
     'SEO_IMG_PATH' => '/seo_setting/',
     'PROPERTY_SEO_IMG_PATH' => '/property_seo_img/',
