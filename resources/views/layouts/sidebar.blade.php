@@ -47,6 +47,7 @@
                         </a>
                     </li>
                 @endif
+             
 
 
 
@@ -101,7 +102,8 @@
                             @if ($unseenCount == 0)
                                 <span></span>
                             @else
-                                <span id="notificationBadge" style="background-color: #7A143B;font-size:10px;border:none !important"
+                                <span id="notificationBadge"
+                                    style="background-color: #7A143B;font-size:10px;border:none !important"
                                     class="notification-badge mx-2 rounded-circle badge text-white border">
                                     {{ $unseenCount > 0 ? $unseenCount : 0 }}
                                 </span>
@@ -137,8 +139,9 @@
                                         @if ($unseenCount == 0)
                                             <span id="nonActiveDocBadge"></span>
                                         @else
-                                            <span id="nonActiveDocBadge" style="background-color: #7A143B;font-size:10px;border:none !important"
-                                            class="notification-badge mx-2 rounded-circle badge text-white border">
+                                            <span id="nonActiveDocBadge"
+                                                style="background-color: #7A143B;font-size:10px;border:none !important"
+                                                class="notification-badge mx-2 rounded-circle badge text-white border">
                                                 {{ $unseenCount }}
                                             </span>
                                         @endif
@@ -151,40 +154,44 @@
                 @endif
 
                 @if (has_permissions('read', 'property'))
-                <li class="sidebar-item has-sub">
-                    <a href="#" class='sidebar-link' id="notificationLinkProperty">
-                        <i class="bi bi-building"></i>
-                        <span class="menu-item">{{ __('Property') }}</span>
-                        <span id="notificationBadgeProperty" style="background-color: #7A143B;font-size:10px;border:none !important"
-                        class="notification-badge mx-2 rounded-circle badge text-white border"></span>
-                    </a>
-                    <ul class="submenu" style="padding-left: 0rem">
-                        @if (has_permissions('read', 'property'))
-                            <li class="submenu-item">
-                                <a class="px-3 ms-3" href="{{ url('property') }}">
-                                    {{ __('All Properties') }}
-                                </a>
-                            </li>
-                        @endif
-                        @if (has_permissions('read', 'property'))
-                            <li class="submenu-item">
-                                <a href="{{ url('activeProperty') }}" class="ms-3 d-flex align-items-center justify-content-between px-3">
-                                    {{ __('Active Properties') }}
-                                </a>
-                            </li>
-                        @endif
-                        @if (has_permissions('read', 'property'))
-                            <li class="submenu-item">
-                                <a id="ClearPropertyNotification" href="{{ url('inactiveProperty') }}" class="ms-3 d-flex align-items-center justify-content-between px-3">
-                                    {{ __('Inactive Properties') }}
-                                    <span  id="nonActivePropertyBadge"style="background-color: #7A143B;font-size:10px;border:none !important"
-                                    class="notification-badge mx-2 rounded-circle badge text-white border"></span>
-                                </a>
-                            </li>
-                        @endif
-                    </ul>
-                </li>
-            @endif
+                    <li class="sidebar-item has-sub">
+                        <a href="#" class='sidebar-link' id="notificationLinkProperty">
+                            <i class="bi bi-building"></i>
+                            <span class="menu-item">{{ __('Property') }}</span>
+                            <span id="notificationBadgeProperty"
+                                style="background-color: #7A143B;font-size:10px;border:none !important"
+                                class="notification-badge mx-2 rounded-circle badge text-white border"></span>
+                        </a>
+                        <ul class="submenu" style="padding-left: 0rem">
+                            @if (has_permissions('read', 'property'))
+                                <li class="submenu-item">
+                                    <a class="px-3 ms-3" href="{{ url('property') }}">
+                                        {{ __('All Properties') }}
+                                    </a>
+                                </li>
+                            @endif
+                            @if (has_permissions('read', 'property'))
+                                <li class="submenu-item">
+                                    <a href="{{ url('activeProperty') }}"
+                                        class="ms-3 d-flex align-items-center justify-content-between px-3">
+                                        {{ __('Active Properties') }}
+                                    </a>
+                                </li>
+                            @endif
+                            @if (has_permissions('read', 'property'))
+                                <li class="submenu-item">
+                                    <a id="ClearPropertyNotification" href="{{ url('inactiveProperty') }}"
+                                        class="ms-3 d-flex align-items-center justify-content-between px-3">
+                                        {{ __('Inactive Properties') }}
+                                        <span
+                                            id="nonActivePropertyBadge"style="background-color: #7A143B;font-size:10px;border:none !important"
+                                            class="notification-badge mx-2 rounded-circle badge text-white border"></span>
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </li>
+                @endif
 
 
 
@@ -253,12 +260,105 @@
                         <span class="menu-item">{{ __('Article') }}</span>
                     </a>
                 </li>
+
                 <li class="sidebar-item">
                     <a href="{{ url('featured_properties') }}" class='sidebar-link'>
-                        <i class="bi bi-badge-ad"></i>
+                        <i class="bi bi-vector-pen"></i>
                         <span class="menu-item">{{ __('Advertisement') }}</span>
                     </a>
                 </li>
+
+                <li class="sidebar-item has-sub">
+                    <a href="#" class='sidebar-link'>
+                        <i class="bi bi-badge-ad"></i>
+                        <span class="menu-item">{{ __('Boosted Property') }}</span>
+                    </a>
+                    <ul class="submenu" style="padding-left: 0rem">
+
+                        <li class="submenu-item">
+                            <a class="px-3 ms-3"
+                                href="{{ url('boostproperty') }}">{{ __('All Property') }}</a>
+                        </li>
+
+
+                        <li class="submenu-item">
+
+                            <a href="{{ url('viewSuccessBoost') }}"
+                                class="ms-3 d-flex align-items-center justify-content-between px-3">
+                                {{ __('Active Property') }}
+                                {{-- <span
+                                    class="mx-2 rounded-circle badge bg-success text-white border border-success ">{{ $otpVerified }}</span> --}}
+                            </a>
+                        </li>
+                        <li class="submenu-item">
+
+                            <a href="{{ url('viewPendingBoost') }}"
+                                class="ms-3 d-flex align-items-center justify-content-between px-3">
+                                {{ __('InActive Property') }}
+                                {{-- <span
+                                    class="mx-2 rounded-circle badge bg-success text-white border border-success ">{{ $otpVerified }}</span> --}}
+                            </a>
+                        </li>
+                       
+
+
+
+
+                        <li class="submenu-item">
+                            <li class="sidebar-item has-sub">
+                                <a href="#" class='sidebar-link'>
+                                    <i class="bi bi-cash"></i>
+                                    <span class="menu-item">{{ __('Invoice') }}</span>
+                                </a>
+                                <ul class="submenu" style="padding-left: 0rem">
+            
+                                    <li class="submenu-item">
+                                        <a class="px-3 ms-3"
+                                            href="{{ url('viewInvoice') }}">{{ __('All Invoice') }}</a>
+                                    </li>
+            
+            
+                                    <li class="submenu-item">
+            
+                                        <a href="{{ url('viewSuccessInvoice') }}"
+                                            class="ms-3 d-flex align-items-center justify-content-between px-3">
+                                            {{ __('Successfull Invoice') }}
+                                            {{-- <span
+                                                class="mx-2 rounded-circle badge bg-success text-white border border-success ">{{ $otpVerified }}</span> --}}
+                                        </a>
+                                    </li>
+            
+            
+                                    <li class="submenu-item">
+                                        <a href="{{ url('viewPendingInvoice') }}"
+                                            class="ms-3 d-flex align-items-center justify-content-between px-3">
+                                            {{ __('Pending Invoice') }}
+            
+                                            {{-- <span
+                                                class="mx-2 rounded-circle badge bg-danger text-white border border-danger ">{{ $otpUnverified }}</span> --}}
+            
+                                        </a>
+                                    </li>
+
+                                    
+                                    
+            
+            
+                                </ul>
+                            </li>
+                        </li>
+
+
+                    </ul>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ url('propertyAnalytics') }}" class='sidebar-link'>
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span class="menu-item">{{ __('Property Analytics') }}</span>
+                    </a>
+                </li>
+
                 <li class="sidebar-item">
                     <a href="{{ url('package') }}" class='sidebar-link'>
 
@@ -473,8 +573,10 @@
         var nonActivePropertyBadge = document.getElementById('nonActivePropertyBadge');
 
         // Move the badge down if it's not already moved and dropdown is opened
-        if (!isBadgeMovedProperty && notificationBadgeProperty && notificationBadgeProperty.textContent.trim() !== '0') {
-            nonActivePropertyBadge.textContent = notificationBadgeProperty.textContent; // Move content to bottom
+        if (!isBadgeMovedProperty && notificationBadgeProperty && notificationBadgeProperty.textContent
+            .trim() !== '0') {
+            nonActivePropertyBadge.textContent = notificationBadgeProperty
+                .textContent; // Move content to bottom
             notificationBadgeProperty.style.display = 'none'; // Hide the original badge from the top
             isBadgeMovedProperty = true; // Mark that the badge is moved
         }
@@ -490,7 +592,8 @@
                     // Update the notification badge with the new count
                     if (!isBadgeMovedProperty && response.count >= 0) {
                         $('#notificationBadgeProperty').text(response.count);
-                        $('#notificationBadgeProperty').css('display', response.count > 0 ? 'inline-block' : 'none');
+                        $('#notificationBadgeProperty').css('display', response.count > 0 ?
+                            'inline-block' : 'none');
                     }
 
                     // Update inactive property badge at the bottom
@@ -519,15 +622,17 @@
                 success: function(response) {
                     if (response.status === 'success') {
                         // Clear the notification badge visually
-                        $('#notificationBadgeProperty').text('0').hide(); // Hide badge from the top
-                        $('#nonActivePropertyBadge').text('0'); // Reset the badge at the bottom
+                        $('#notificationBadgeProperty').text('0')
+                            .hide(); // Hide badge from the top
+                        $('#nonActivePropertyBadge').text(
+                            '0'); // Reset the badge at the bottom
                     }
                 },
                 error: function(xhr) {
-                    console.log('Error clearing property notifications:', xhr); // Log any errors
+                    console.log('Error clearing property notifications:',
+                        xhr); // Log any errors
                 }
             });
         });
     });
 </script>
-

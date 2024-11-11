@@ -6,6 +6,8 @@ return [
     'PROJECT_CATEGORY_IMG_PATH' => '/project_category/',
     "PROPERTY_PATH" => '/property_document/',
     "PROJECT_PATH" => '/project/',
+    'Invoice_IMG_PATH' => '/invoice/',
+    // "PROJECT_Documnet_PATH" => '/property_document/',
     'SEO_IMG_PATH' => '/seo_setting/',
     'PROPERTY_SEO_IMG_PATH' => '/property_seo_img/',
     'PROJECT_SEO_IMG_PATH' => '/project_seo_img/',

@@ -26,6 +26,7 @@ use App\Http\Controllers\SeoSettingsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\AdvertisementController;
+use App\Http\Controllers\BoostPropertyController;
 use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\OutdoorFacilityController;
 use App\Http\Controllers\ProjectCategory;
@@ -146,6 +147,29 @@ Route::middleware(['language'])->group(function () {
 
         /// END :: PAYMENT ROUTE
 
+        Route::resource('boostproperty', BoostPropertyController::class);
+        Route::get('propertyAnalytics', [PropertController::class, 'viewBoostAnalytics']);
+        
+        Route::get('listPropertiesAnalytics', [BoostPropertyController::class, 'listPropertiesAnalytics']);
+        Route::get('listBoostedProperties', [BoostPropertyController::class, 'listBoostedProperties']);
+        Route::post('updateBoostPropertyStatus', [BoostPropertyController::class, 'updateBoostPropertyStatus']);
+
+        Route::get('viewSuccessBoost', [BoostPropertyController::class, 'viewSuccessBoost']);
+        Route::get('listBoostedPropertiesSuccess', [BoostPropertyController::class, 'listBoostedPropertiesSuccess']);
+
+        Route::get('viewPendingBoost', [BoostPropertyController::class, 'viewPendingBoost']);
+        Route::get('listBoostedPropertiesPending', [BoostPropertyController::class, 'listBoostedPropertiesPending']);
+
+        Route::get('viewInvoice', [BoostPropertyController::class, 'viewInvoice']);
+        Route::get('listBoostPropertyInvoices', [BoostPropertyController::class, 'listBoostPropertyInvoices']);
+
+        Route::get('viewSuccessInvoice', [BoostPropertyController::class, 'viewSuccessInvoice']);
+        Route::get('listBoostPropertyInvoicesSuccess', [BoostPropertyController::class, 'listBoostPropertyInvoicesSuccess']);
+
+        Route::get('viewPendingInvoice', [BoostPropertyController::class, 'viewPendingInvoice']);
+        Route::get('listBoostPropertyInvoicesPending', [BoostPropertyController::class, 'listBoostPropertyInvoicesPending']);
+
+        Route::post('updateBoostPropertyInvoiceStatus', [BoostPropertyController::class, 'updateBoostPropertyInvoiceStatus']);
         /// START :: PAYMENT ROUTE
 
         Route::get('customer/export/', [CustomersController::class, 'export']);
@@ -305,6 +329,9 @@ Route::middleware(['language'])->group(function () {
         Route::resource('property', PropertController::class);
 
         Route::post('/bulk-property-update', [PropertController::class, 'bulkUpdateStatus'])->name('property.BulkUpdate');
+
+       
+        Route::post('/propertyAds', [PropertController::class, 'storeAds'])->name('property.ads');
 
         Route::get('getPropertyList', [PropertController::class, 'getPropertyList']);
         Route::post('/update-trash-status-property', [PropertController::class, 'updateTrashStatusProperty']);

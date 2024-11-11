@@ -89,6 +89,11 @@ class Property extends Model
     {
         return $this->hasMany(Advertisement::class);
     }
+    public function PropertyBoost()
+    {
+        return $this->hasMany(PropertyBoost::class, 'property_id');
+    }
+    
 
     public function getGalleryAttribute()
     {
