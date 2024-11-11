@@ -41,17 +41,112 @@
                 {{-- Category --}}
                 <div class="card-body">
                     <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('property_type', __('Property Type'), ['class' => 'form-label col-12']) }}
+
+                        <div class="form-check">
+                            {{ Form::radio('property_type', 0, isset($list->property_type) && $list->property_type == 0, ['class' => 'form-check-input', 'id' => 'commercial']) }}
+                            <label class="form-check-label" for="commercial">{{ __('Commercial') }}</label>
+                        </div>
+
+                        <div class="form-check">
+                            {{ Form::radio('property_type', 1, isset($list->property_type) && $list->property_type == 1, ['class' => 'form-check-input', 'id' => 'residential']) }}
+                            <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
+                        </div>
+
+                        <div class="form-check">
+                            {{ Form::radio('property_type', 2, isset($list->property_type) && $list->property_type == 2, ['class' => 'form-check-input', 'id' => 'industrial']) }}
+                            <label class="form-check-label" for="industrial">{{ __('Industrial') }}</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 col-12 form-group mandatory">
+                        {{ Form::label('customer', __('Customer'), ['class' => 'form-label col-12 ']) }}
+                        <select name="customer" class="form-select form-control-sm" id="Customer" required>
+                            <option value="" selected>{{ __('Choose Customer') }}</option>
+
+                            @foreach ($customers as $cus)
+                                <option value="{{ $cus->id }}">{{ $cus->name }}</option>
+                            @endforeach
+
+                            <!-- Commercial Categories -->
+
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('category', __('Category'), ['class' => 'form-label col-12 ']) }}
-                        <select name="category" class="form-select form-control-sm" data-parsley-minSelect='1'
-                            id="category" required>
+                        <select name="category" class="form-select form-control-sm" id="categoryss" required>
                             <option value="" selected>{{ __('Choose Category') }}</option>
-                            @foreach ($category as $row)
-                                <option value="{{ $row->id }}" data-parametertypes='{{ $row->parameter_types }}'>
-                                    {{ $row->category }}
-                                </option>
+
+                            <!-- Commercial Categories -->
+                            @if ($commercialCategories->isEmpty() && $category)
+                                <option value="0" class="commercial-category" style="display: none;">
+                                    {{ __('No Commercial Category Available') }}</option>
+                            @endif
+                            @foreach ($commercialCategories as $category)
+                                <option value="{{ $category->id }}" class="commercial-category" style="display: none;">
+                                    {{ $category->category }}</option>
+                            @endforeach
+
+                            <!-- Residential Categories -->
+                            @if ($residentialCategories->isEmpty())
+                                <option value="1" class="residential-category" disabled style="display: none;">
+                                    {{ __('No Residential Category Available') }}</option>
+                            @endif
+                            @foreach ($residentialCategories as $category)
+                                <option value="{{ $category->id }}" class="residential-category" style="display: none;">
+                                    {{ $category->category }}</option>
+                            @endforeach
+
+                            <!-- Industrial Categories -->
+                            @if ($industrialCategories->isEmpty())
+                                <option value="2" class="industrial-category" style="display: none;">
+                                    {{ __('No Industrial Category Available') }}</option>
+                            @endif
+                            @foreach ($industrialCategories as $category)
+                                <option value="{{ $category->id }}" class="industrial-category" style="display: none;">
+                                    {{ $category->category }}</option>
                             @endforeach
                         </select>
                     </div>
+
+                    <!-- JavaScript to show/hide categories -->
+                    <script>
+                        // Function to handle property type selection
+                        document.querySelectorAll('input[name="property_type"]').forEach(function(radio) {
+                            radio.addEventListener('change', function() {
+                                var selectedType = document.querySelector('input[name="property_type"]:checked').value;
+
+                                // Hide all categories initially
+                                document.querySelectorAll('.commercial-category').forEach(function(option) {
+                                    option.style.display = 'none';
+                                });
+                                document.querySelectorAll('.residential-category').forEach(function(option) {
+                                    option.style.display = 'none';
+                                });
+                                document.querySelectorAll('.industrial-category').forEach(function(option) {
+                                    option.style.display = 'none';
+                                });
+
+                                // Show categories based on selected property type
+                                if (selectedType == '0') {
+                                    document.querySelectorAll('.commercial-category').forEach(function(option) {
+                                        option.style.display = 'block';
+                                    });
+                                } else if (selectedType == '1') {
+                                    document.querySelectorAll('.residential-category').forEach(function(option) {
+                                        option.style.display = 'block';
+                                    });
+                                } else if (selectedType == '2') {
+                                    document.querySelectorAll('.industrial-category').forEach(function(option) {
+                                        option.style.display = 'block';
+                                    });
+                                }
+                            });
+                        });
+                    </script>
+
+
 
                     {{-- Title --}}
                     <div class="col-md-12 col-12 form-group mandatory">
@@ -86,19 +181,7 @@
                         ]) }}
                     </div>
 
-                    <div class="col-md-12 col-12 form-group mandatory">
-                        {{ Form::label('property_type', __('Property Type'), ['class' => 'form-label col-12']) }}
 
-                        <div class="form-check">
-                            {{ Form::radio('property_type', 0, isset($list->property_type) && $list->property_type == 0, ['class' => 'form-check-input', 'id' => 'commercial']) }}
-                            <label class="form-check-label" for="commercial">{{ __('Commercial') }}</label>
-                        </div>
-
-                        <div class="form-check">
-                            {{ Form::radio('property_type', 1, isset($list->property_type) && $list->property_type == 1, ['class' => 'form-check-input', 'id' => 'residential']) }}
-                            <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
-                        </div>
-                    </div>
 
 
 
@@ -220,12 +303,22 @@
 
                 <h3 class="card-header"> {{ __('Facilities') }}</h3>
                 <hr>
-                {{ Form::hidden('category_count[]', $category, ['id' => 'category_count']) }}
-                {{ Form::hidden('parameter_count[]', $parameters, ['id' => 'parameter_count']) }}
-                {{ Form::hidden('facilities[]', $facility, ['id' => 'facilities']) }}
+                <div id="parameter_type" class="row card-body">
+                    @foreach ($parameters as $key => $value)
+                        <div class='col-md-3 form-group'>
+                            {{ Form::checkbox('par_' . $value->id, $value->id, old('par_' . $value->id) && in_array($value->id, old('par_' . $value->id)), ['class' => 'form-check-input', 'id' => 'chk' . $value->id]) }}
+                            {{ Form::label('chk' . $value->id, $value->name, ['class' => 'form-check-label']) }}
 
-                {{ Form::hidden('parameter_add', '', ['id' => 'parameter_add']) }}
-                <div id="parameter_type" class="row card-body"></div>
+                            {{ Form::text('par_' . $value->id, old('par_' . $value->id), [
+                                'class' => 'form-control mt-3',
+                                'placeholder' => 'Facility',
+                                'id' => 'dist' . $value->id,
+                            ]) }}
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- <div id="parameter_type" class="row card-body"></div> --}}
 
             </div>
         </div>
@@ -427,7 +520,7 @@
         $(document).ready(function() {
             // $("#category").val($("#category option:first").val()).trigger('change');
 
-            $('#facility').hide();
+            // $('#facility').hide();
             $('#duration').hide();
             $('#price_duration').removeAttr('required');
 

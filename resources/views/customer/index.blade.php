@@ -327,14 +327,14 @@
 
         function docVerificationStatusFormatter(value, row, index) {
             return value == 1 ?
-                '<span class="bg-success p-2 rounded-1 text-light fw-bold">Approved</span>' :
-                '<span class=" p-2 rounded-1 text-light fw-bold" style="background-color:#f75454">Unapproved</span>';
+                '<span>Approved</span>' :
+                '<span>Unapproved</span>';
         }
 
         function otpStatusFormatter(value, row, index) {
             return value == 1 ?
-                '<span class="bg-success p-2 rounded-1 text-light fw-bold">Verified</span>' :
-                '<span class=" p-2 rounded-1 text-light fw-bold" style="background-color:#f75454">Unverified</span>';
+                '<span>Verified</span>' :
+                '<span>Unverified</span>';
         }
 
         function bulkAction(value, row, index) {

@@ -314,13 +314,14 @@ class ProjectController extends Controller
         }
 
         // Status filter
-        if ($_GET['status'] != '' && isset($_GET['status'])) {
+        if (isset($_GET['status']) && $_GET['status'] != '') {
             $status = $_GET['status'];
             $sql = $sql->where('status', $status);
         }
 
+
         // Category filter
-        if ($_GET['category'] != '' && isset($_GET['category'])) {
+        if (isset($_GET['category']) && $_GET['category'] != '') {
             $category_id = $_GET['category'];
             $sql = $sql->where('category_id', $category_id);
         }
@@ -387,14 +388,26 @@ class ProjectController extends Controller
      */
     public function edit($id)
     {
-        $project = Projects::find($id);
+
+    // Retrieve the project by ID
+    $project = Projects::findOrFail($id); // Fetch the project by ID
+
+    // Retrieve data from each model independently
+    $categorys = ProjectCategory::all();        // Fetch all categories
+    $images = ProjectDocuments::where('project_id', $id)->get(); // Fetch all gallery images
+    $plans = ProjectPlans::where('project_id', $id)->get();                 // Fetch all plans
+    $customers = Customer::all();
+    $facilit   = AssignedOutdoorFacilities::all();
+    $assignedParameters =AssignParameters::where('project_id', $id)->get();
+    $parameters = Parameter::all();
+    $outdoor = OutdoorFacilities::all();
+
+    // Pass all the retrieved data to the view
+    return view('project.edit', compact('outdoor','parameters','assignedParameters', 'project', 'categorys', 'images', 'plans', 'customers','facilit'));
+
 
         // If the project doesn't exist, redirect back with an error
-        if (!$project) {
-            return redirect()->back()->with('error', 'Project not found.');
-        }
-        // Pass the project data to the edit view
-        return view('project.create', compact('project'));
+
     }
 
     /**
@@ -406,7 +419,226 @@ class ProjectController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'propery_type' => 'required',
+            'square_yd' => 'required',
+            'description' => 'required',
+            'image' => 'nullable|file|mimes:jpg,png,jpeg|max:2048',
+            'category_id' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'country' => 'required',
+            'price' => 'required',
+            'documents.*' => 'required|file|mimes:jpg,png,jpeg,pdf|max:2048',
+            'gallery_images.*' => 'required|file|mimes:jpg,png,jpeg|max:2048',
+            'plans.*' => 'required|file|mimes:jpg,png,jpeg,pdf|max:2048',
+            'rentduration' => 'required',
+            'type' => 'required',
+            // 'slug_id' => 'required',
+        ]);
+
+        // dd("ok");
+
+        // If validation fails, redirect back with errors
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+            $currentUser = 0;
+            // dd($currentUser);
+            // dd($currentUser);
+            $arr = [];
+
+
+            // Check if the project exists and belongs to the current user
+
+            $project = Projects::findOrFail($id);
+            $project->added_by = $currentUser;
+
+
+            // Update project details
+            $project->title = $request->title;
+            $project->description = $request->description;
+            $project->category_id = $request->category_id;
+            $project->city = $request->city;
+            $project->state = $request->state;
+            $project->type = $request->type;
+            $project->propery_type = $request->propery_type;
+            $project->square_yd = $request->square_yd;
+            $project->price = $request->price;
+            $project->rentduration = $request->rentduration;
+            $project->country = $request->country;
+            $project->latitude = (isset($request->latitude)) ? $request->latitude : '';
+            $project->location = (isset($request->location)) ? $request->location : '';
+            $project->longitude = (isset($request->longitude)) ? $request->longitude : '';
+            $project->added_by  = (isset($request->added_by)) ? $request->added_by  : $currentUser;
+            $project->video_link = (isset($request->video_link)) ? $request->video_link : '';
+            $project->total_click = (isset($request->total_click)) ? $request->total_click : '';
+            $project->slug_id = generateUniqueSlug($project->title, 1);
+
+            // Image handling
+            if ($request->hasFile('image')) {
+                $project->image = store_image($request->file('image'), 'PROJECT_TITLE_IMG_PATH');
+            }
+
+            if ($request->has('meta_title')) {
+                $project->meta_title = $request->meta_title;
+            }
+            if ($request->has('meta_description')) {
+                $project->meta_description = $request->meta_description;
+            }
+            if ($request->has('meta_keywords')) {
+                $project->meta_keywords = $request->meta_keywords;
+            }
+            if ($request->has('latitude')) {
+                $project->latitude = $request->latitude;
+            }
+            if ($request->has('longitude')) {
+                $project->longitude = $request->longitude;
+            }
+            if ($request->has('video_link')) {
+                $project->video_link = $request->video_link;
+            }
+            if ($request->has('type')) {
+                $project->type = $request->type;
+            }
+
+            // Saving the project
+            $project->save();
+            $facility = OutdoorFacilities::all();
+
+            foreach ($facility as $value) {
+
+                // $distanceKey = 'facility_distance[' . $value->id . ']';
+                // $distance = $request->input($distanceKey);
+
+                // if ($distance && $distance != '') {
+
+                //     $facilities = new AssignedOutdoorFacilities();
+                //     $facilities->facility_id = $value->id;
+                //     $facilities->property_id = null; // Set property ID if needed
+                //     $facilities->project_id = $project->id; // Set the project ID separately
+                //     $facilities->distance = $distanceKey; // The distance value from the input
+                //     $facilities->save();
+                // }
+
+
+                foreach ($request->input('facility_distance', []) as $facility_id => $distance) {
+                    if ($distance) {
+                        // Check if the record already exists
+                        $existingFacility = AssignedOutdoorFacilities::where('facility_id', $facility_id)
+                            ->where('project_id', $project->id)
+                            ->first();
+
+                        if ($existingFacility) {
+                            // If the record exists, update the distance
+                            $existingFacility->distance = $distance;
+                            $existingFacility->save();
+                        } else {
+                            // If the record doesn't exist, create a new one
+                            $facilities = new AssignedOutdoorFacilities();
+                            $facilities->facility_id = $facility_id;
+                            $facilities->project_id = $project->id;
+                            $facilities->distance = $distance;
+                            $facilities->save();
+                        }
+                    }
+                }
+            }
+
+
+            $parameters = Parameter::all();
+
+            foreach ($parameters as $par) {
+                $parameterKey = 'par_' . $par->id;
+
+                if ($request->has($parameterKey)) {
+
+                    $assign_parameter = new AssignParameters();
+                    $assign_parameter->parameter_id = $par->id;
+                    $assign_parameter->project_id = $project->id;
+
+                    // Check if file has been uploaded for this parameter
+                    if ($request->hasFile($parameterKey)) {
+                        $destinationPath = public_path('images') . config('global.PARAMETER_IMG_PATH');
+                        // Create directory if it doesn't exist
+                        if (!is_dir($destinationPath)) {
+                            mkdir($destinationPath, 0777, true);
+                        }
+                        // Generate a unique image name
+                        $imageName = microtime(true) . "." . $request->file($parameterKey)->getClientOriginalExtension();
+                        // Move the file to the destination path
+                        $request->file($parameterKey)->move($destinationPath, $imageName);
+                        $assign_parameter->value = $imageName; // Store the file name in the 'value' field
+                    } else {
+                        // For non-file inputs, store the value directly
+                        $inputValue = $request->input($parameterKey);
+                        $assign_parameter->value = is_array($inputValue)
+                            ? json_encode($inputValue, JSON_FORCE_OBJECT)
+                            : $inputValue;
+                    }
+
+                    // Associate the parameter with the project and save it
+                    $assign_parameter->modal()->associate($project);
+
+                    // Store the parameter's value for further processing if needed
+                    $arr[$par->id] = $request->input($parameterKey);
+                    try {
+                        $assign_parameter->save();
+                        log::info("Data saved successfully for parameter ID {$par->id}");
+                    } catch (\Exception $e) {
+                        Log::error("Error saving data: " . $e->getMessage());
+                    }
+                }
+            }
+
+            // Handle gallery images if provided
+            if ($request->hasfile('gallery_images')) {
+                foreach ($request->file('gallery_images') as $file) {
+                    $gallery_image = new ProjectDocuments();
+                    $gallery_image->name = store_image($file, 'PROPERTY_GALLERY_IMG_PATH');
+                    $gallery_image->project_id = $project->id;
+                    $gallery_image->type = 'image';
+                    $gallery_image->save();
+                }
+            }
+
+            // Handle project documents if provided
+            if ($request->hasfile('documents')) {
+                foreach ($request->file('documents') as $file) {
+                    $project_documents = new ProjectDocuments();
+                    $project_documents->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
+                    $project_documents->project_id = $project->id;
+                    $project_documents->type = 'doc';
+                    $project_documents->save();
+                }
+            }
+
+            if ($request->hasFile('plans')) { // Correct key is checked here
+                foreach ($request->file('plans') as $file) { // Use 'plans' here instead of 'documents'
+                    $project_plan = new ProjectPlans();
+                    $project_plan->document = store_image($file, 'PROJECT_DOCUMENT_PATH');
+                    $project_plan->title = $project->title;
+                    $project_plan->project_id = $project->id;
+                    $project_plan->save();
+                }
+            }
+
+            // dd($request->all());
+
+
+            // Commit the transaction
+            // dd($request->all());
+            DB::commit();
+            return redirect()->back()->with('success', isset($request->id) ? 'Project Updated Successfully' : 'Project Posted Successfully');
+        } catch (Exception $e) {
+            dd($e->getMessage());
+            DB::rollBack();
+            return redirect()->back()->with('error', $e);
+        }
     }
 
     /**

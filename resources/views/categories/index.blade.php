@@ -50,23 +50,36 @@
                             {{-- Category --}}
                             <div class="col-md-4 col-sm-12 form-group mandatory">
                                 {{ Form::label('category', __('Category'), ['class' => 'form-label text-center']) }}
-                                {{ Form::text('category', '', [ 'class' => 'form-control', 'placeholder' => trans('Category'), 'data-parsley-required' => 'true', ]) }}
+                                {{ Form::text('category', '', ['class' => 'form-control', 'placeholder' => trans('Category'), 'data-parsley-required' => 'true']) }}
                             </div>
 
                             {{-- Facilities --}}
                             <div class="col-md-4 col-sm-12 form-group mandatory">
                                 {{ Form::label('type', __('Facilities'), ['class' => 'form-label text-center']) }}
-                                <select data-placeholder="{{ __('Choose Facilities') }}" name="parameter_type[]" class="form-control form-select chosen-select" id="select_parameter_type" multiple data-parsley-required="true" data-parsley-minSelect='1'>
+                                <select data-placeholder="{{ __('Choose Facilities') }}" name="parameter_type[]"
+                                    class="form-control form-select chosen-select" id="select_parameter_type" multiple
+                                    data-parsley-required="true" data-parsley-minSelect='1'>
                                     @foreach ($parameters as $parameter)
                                         <option value={{ $parameter->id }}>{{ $parameter->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
 
+
+
                             {{-- Image --}}
                             <div class="col-md-4 col-sm-12 form-group mandatory">
                                 {{ Form::label('image', __('Image'), ['class' => 'form-label text-center']) }}
                                 {{ Form::file('image', ['class' => 'form-control', 'data-parsley-required' => 'true', 'accept' => '.svg']) }}
+                            </div>
+                            {{-- Category Type --}}
+                            <div class="col-md-4 col-sm-12 form-group mandatory">
+                                {{ Form::label('Category type', __('Category Type'), ['class' => 'form-label text-center']) }}
+                                <select name="category_type" class="form-control form-select " id="category_type">
+                                    <option value="0">Commerical</option>
+                                    <option value="1">Residential</option>
+                                    <option value="2">Industrial</option>
+                                </select>
                             </div>
 
                         </div>
@@ -75,14 +88,17 @@
                             {{-- Meta Title --}}
                             <div class="col-md-4 col-sm-12 form-group">
                                 {{ Form::label('title', __('Meta Title'), ['class' => 'form-label text-center']) }}
-                                <input type="text" name="meta_title" class="form-control mb-2" id="meta_title" oninput="getWordCount('meta_title','meta_title_count','19.9px arial')" placeholder="{{ __('Meta Title') }}">
+                                <input type="text" name="meta_title" class="form-control mb-2" id="meta_title"
+                                    oninput="getWordCount('meta_title','meta_title_count','19.9px arial')"
+                                    placeholder="{{ __('Meta Title') }}">
                                 <h6 id="meta_title_count">0</h6>
                             </div>
 
                             {{-- Meta Keywords --}}
                             <div class="col-md-4 col-sm-12 form-group">
                                 {{ Form::label('title', __('Meta Keywords'), ['class' => 'form-label text-center']) }}
-                                <input type="text" name="meta_keywords" class="form-control mb-2" id="meta_keywords" placeholder="{{ __('Meta Keywords') }}">
+                                <input type="text" name="meta_keywords" class="form-control mb-2" id="meta_keywords"
+                                    placeholder="{{ __('Meta Keywords') }}">
                                 <h6 id="meta_keywords fw-lighter">Use Comma
                                     "<span class="text-danger">,</span>" Without White Space For Multiple Keywords</h6>
                             </div>
@@ -90,7 +106,9 @@
                             {{-- Meta Description --}}
                             <div class="col-md-4 col-sm-12 form-group">
                                 {{ Form::label('description', __('Meta Description'), ['class' => 'form-label text-center']) }}
-                                <textarea id="meta_description" name="meta_description" class="form-control mb-2" oninput="getWordCount('meta_description','meta_description_count','12.9px arial')" placeholder="{{ __('Meta Description') }}"></textarea>
+                                <textarea id="meta_description" name="meta_description" class="form-control mb-2"
+                                    oninput="getWordCount('meta_description','meta_description_count','12.9px arial')"
+                                    placeholder="{{ __('Meta Description') }}"></textarea>
                                 <h6 id="meta_description_count">0</h6>
                             </div>
 
@@ -111,24 +129,36 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-12">
-                        <table class="table table-striped"
-                            id="table_list" data-toggle="table" data-url="{{ url('categoriesList') }}"
-                            data-click-to-select="true" data-responsive="true" data-side-pagination="server"
-                            data-pagination="true" data-page-list="[5, 10, 20, 50, 100, 200,All]" data-search="true"
-                            data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true"
-                            data-trim-on-search="false" data-sort-name="id" data-sort-order="desc"
-                            data-pagination-successively-size="3" data-query-params="queryParams">
+                        <table class="table table-striped" id="table_list" data-toggle="table"
+                            data-url="{{ url('categoriesList') }}" data-click-to-select="true" data-responsive="true"
+                            data-side-pagination="server" data-pagination="true"
+                            data-page-list="[5, 10, 20, 50, 100, 200,All]" data-search="true" data-toolbar="#toolbar"
+                            data-show-columns="true" data-show-refresh="true" data-trim-on-search="false"
+                            data-sort-name="id" data-sort-order="desc" data-pagination-successively-size="3"
+                            data-query-params="queryParams">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th scope="col" data-field="id" data-sortable="true" data-align="center">{{ __('ID') }}</th>
-                                    <th scope="col" data-field="category" data-sortable="true" data-align="center">{{ __('Category') }}</th>
-                                    <th scope="col" data-field="image" data-formatter="imageFormatter" data-sortable="false" data-align="center">{{ __('Image') }}</th>
-                                    <th scope="col" data-field="type" data-sortable="false" data-align="center">{{ __('Facilities') }}</th>
-                                    <th scope="col" data-field="meta_title" data-sortable="true" data-align="center">{{ __('Meta Title') }}</th>
-                                    <th scope="col" data-field="meta_description" data-sortable="true" data-align="center"> {{ __('Meta Description') }}</th>
-                                    <th scope="col" data-field="meta_keywords" data-sortable="true" data-align="center">{{ __('Meta Keywords') }}</th>
-                                    <th scope="col" data-field="status" data-sortable="false" data-formatter="enableDisableSwitchFormatter" data-align="center"> {{ __('Enable/Disable') }} </th>
-                                    <th scope="col" data-field="operate" data-sortable="false" data-align="center" data-events="actionEvents"> {{ __('Action') }}</th>
+                                    <th scope="col" data-field="id" data-sortable="true" data-align="center">
+                                        {{ __('ID') }}</th>
+                                    <th scope="col" data-field="category" data-sortable="true" data-align="center">
+                                        {{ __('Category') }}</th>
+                                    <th scope="col" data-field="image" data-formatter="imageFormatter"
+                                        data-sortable="false" data-align="center">{{ __('Image') }}</th>
+                                    <th scope="col" data-field="type" data-sortable="false" data-align="center">
+                                        {{ __('Facilities') }}</th>
+                                    <th scope="col" data-field="category_type" data-sortable="true" data-formatter="CategoryTypeFormattor" data-align="center">
+                                        {{ __('Category Type') }}</th>
+                                    <th scope="col" data-field="meta_title" data-sortable="true" data-align="center">
+                                        {{ __('Meta Title') }}</th>
+                                    <th scope="col" data-field="meta_description" data-sortable="true"
+                                        data-align="center"> {{ __('Meta Description') }}</th>
+                                    <th scope="col" data-field="meta_keywords" data-sortable="true"
+                                        data-align="center">{{ __('Meta Keywords') }}</th>
+                                    <th scope="col" data-field="status" data-sortable="false"
+                                        data-formatter="enableDisableSwitchFormatter" data-align="center">
+                                        {{ __('Enable/Disable') }} </th>
+                                    <th scope="col" data-field="operate" data-sortable="false" data-align="center"
+                                        data-events="actionEvents"> {{ __('Action') }}</th>
                                 </tr>
                             </thead>
                         </table>
@@ -149,7 +179,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ url('categories-update') }}" class="form-horizontal" enctype="multipart/form-data" method="POST" data-parsley-validate>
+                    <form action="{{ url('categories-update') }}" class="form-horizontal" enctype="multipart/form-data"
+                        method="POST" data-parsley-validate>
                         {{ csrf_field() }}
 
                         <input type="hidden" id="old_image" name="old_image">
@@ -161,22 +192,28 @@
                                 {{-- Category --}}
                                 <div class="col-md-12 form-group mandatory mt-1">
                                     <label for="edit_category" class="form-label">{{ __('Category') }}</label>
-                                    <input type="text" id="edit_category" class="form-control" placeholder="Name" name="edit_category" data-parsley-required="true">
+                                    <input type="text" id="edit_category" class="form-control" placeholder="Name"
+                                        name="edit_category" data-parsley-required="true">
                                 </div>
 
                                 {{-- Meta Title --}}
                                 <div class="col-md-12 col-sm-12 form-group">
                                     {{ Form::label('title', __('Meta Title'), ['class' => 'form-label text-center']) }}
-                                    <input type="text" name="edit_meta_title" class="form-control" id="edit_meta_title" oninput="getWordCount('edit_meta_title','edit_meta_title_count','19.9px arial')" placeholder="{{ __('Meta title') }}">
+                                    <input type="text" name="edit_meta_title" class="form-control"
+                                        id="edit_meta_title"
+                                        oninput="getWordCount('edit_meta_title','edit_meta_title_count','19.9px arial')"
+                                        placeholder="{{ __('Meta title') }}">
                                     <h6 id="edit_meta_title_count">0</h6>
                                 </div>
 
                                 {{-- Meta Description --}}
                                 <div class="col-md-12 col-sm-12 form-group mt-1">
                                     {{ Form::label('description', __('Description'), ['class' => 'form-label text-center']) }}
-                                    <textarea id="edit_meta_description" name="edit_meta_description" class="form-control" style="height: 74px;" oninput="getWordCount('edit_meta_description','edit_meta_description_count','12.9px arial')"></textarea>
+                                    <textarea id="edit_meta_description" name="edit_meta_description" class="form-control" style="height: 74px;"
+                                        oninput="getWordCount('edit_meta_description','edit_meta_description_count','12.9px arial')"></textarea>
                                     <h6 id="edit_meta_description_count">0</h6>
                                 </div>
+
                                 <div class="col-md-12 col-sm-12 form-group">
                                     {{ Form::label('keywords', __('Keywords'), ['class' => 'form-label text-center']) }}
 
@@ -191,12 +228,24 @@
                             </div>
 
                             <div class="col-md-6">
+                                {{-- Category Type --}}
+                                <div class="form-group">
+                                    {{ Form::label('Category type', __('Category Type'), ['class' => 'form-label text-center']) }}
+                                    <select data-placeholder="{{ __('Choose Type') }}" name="category_type"
+                                        class="form-select" id="edit_category_type">
+                                        <option value="0">Commercial</option>
+                                        <option value="1">Residential</option>
+                                        <option value="2">Industrial</option>
+                                    </select>
+                                </div>
+
                                 <div class="col-sm-12 col-md-12 mandatory">
                                     {{ Form::label('type', __('Facilities'), ['class' => 'col-sm-12 col-form-label ']) }}
 
                                     <div id="output"></div>
 
-                                    <select data-placeholder="Facilities" name="edit_parameter_type[]" id="edit_parameter_type" multiple class="form-select form-control mandatory">
+                                    <select data-placeholder="Facilities" name="edit_parameter_type[]"
+                                        id="edit_parameter_type" multiple class="form-select form-control mandatory">
                                         @foreach ($parameters as $parameter)
                                             <option value={{ $parameter->id }} id='op'>{{ $parameter->name }}
                                             </option>
@@ -222,7 +271,8 @@
                                 <div class="col-sm-12" style="margin-top: 7%">
 
                                     {{ Form::label('image', __('Image'), ['class' => 'col-sm-12 col-form-label']) }}
-                                    <input type="file" name="edit_image" id="edit_image" class="filepond" accept="image/svg+xml">
+                                    <input type="file" name="edit_image" id="edit_image" class="filepond"
+                                        accept="image/svg+xml">
                                 </div>
                                 <div class="col-sm-12 text-center">
                                     <img id="blah" height="100" width="110" style="margin-left: 2%;" />
@@ -254,6 +304,19 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script> --}}
     <script src=https://bevacqua.github.io/dragula/dist/dragula.js></script>
     <script>
+
+        function CategoryTypeFormattor(value){
+            if (value == 0) {
+                return "Commercail"
+            }
+            if (value == 1) {
+                return "Residentail"
+            }
+            if (value == 2) {
+                return "Industrial"
+            }
+        }
+
         $(document).ready(function() {
             getWordCount("meta_title", "meta_title_count", "19.9px arial");
             getWordCount("meta_description", "meta_description_count", "12.9px arial");
@@ -332,7 +395,9 @@
         );
         window.actionEvents = {
             'click .edit_btn': function(e, value, row, index) {
+                // console.log(row);
                 $("#edit_id").val(row.id);
+                $("#edit_category_type").val(row.category_type);
 
                 $("#edit_category").val(row.category);
 

@@ -188,12 +188,12 @@
 
 
 
-                <li class="sidebar-item">
+                {{-- <li class="sidebar-item">
                     <a href="{{ url('project') }}" class='sidebar-link'>
                         <i class="bi bi-house"></i>
                         <span class="menu-item">{{ __('Project') }}</span>
                     </a>
-                </li>
+                </li> --}}
                 @if (has_permissions('read', 'customer'))
                     <li class="sidebar-item">
                         <a href="{{ url('report-reasons') }}" class='sidebar-link'>

@@ -29,7 +29,10 @@ class Property extends Model
         'latitude',
         'longitude',
         'three_d_image',
-        'document'
+        'document',
+        'featured_property',
+        'whatsapp_number',
+        'square_yd',
 
     ];
     protected $hidden = [
@@ -122,6 +125,9 @@ class Property extends Model
             return 0;
         } elseif ($value == 1) {
             return 1;
+        }
+        elseif ($value == 2) {
+            return 2;
         }
     }
 

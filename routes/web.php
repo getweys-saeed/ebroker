@@ -364,6 +364,7 @@ Route::middleware(['language'])->group(function () {
         /// END :: NOTIFICATION
 
         Route::resource('project', ProjectController::class);
+
         Route::post('updateProjectStatus', [ProjectController::class, 'updateStatus'])->name('updateProjectStatus');
 
         Route::resource('seo_settings', SeoSettingsController::class);
@@ -385,7 +386,7 @@ Route::middleware(['language'])->group(function () {
         Route::post('project-category-update', [ProjectCategoryController::class, 'categoryupdate'])->name('project_category.update');
         Route::post('project-category-status', [ProjectCategoryController::class, 'updateCategory'])->name('project_category.status');
         Route::get('project-category-delete/{id}', [ProjectCategoryController::class, 'destroy'])->name("project_category.delete");
-       
+
 
 
     });

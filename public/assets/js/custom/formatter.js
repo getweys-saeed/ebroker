@@ -68,13 +68,12 @@ function propertyTypeFormatter(value,row) {
     console.log(row.property_type_raw);
 
     if ( row.property_type_raw == 0 ) {
-        return '<div class="sell_type btn btn-sm btn-secondary fw-bold">Commercial</div>';
+        return '<div class="">Commercial</div>';
     } else if ( row.property_type_raw == 1 ) {
-        return '<div class="rent_type btn btn-sm  fw-bold" style="background-color:#f75454">Residential</div>';
-    } else if ( row.property_type_raw == 2 ) {
-        return '<div class="sold_type btn btn-sm btn-success fw-bold">Sold</div>';
-    } else if ( row.property_type_raw == 3 ) {
-        return '<div class="rented_type btn btn-sm btn-primary fw-bold">Rented</div>';
+        return '<div>Residential</div>';
+    }
+    else if ( row.property_type_raw == 2 ) {
+        return '<div>Residnetial</div>';
     }
 }
 

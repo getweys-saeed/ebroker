@@ -29,29 +29,50 @@ class ViewServiceProvider extends ServiceProvider {
         /*** Main Blade File ***/
         View::composer('layouts.main', static function (\Illuminate\View\View $view) use ($cache) {
             $lang = Session::get('language');
-            if($lang){
+            if ($lang) {
                 $view->with('language', $lang);
-            }else{
-                $cache = app(CachingService::class);
+            } else {
                 $defaultLanguage = $cache->getDefaultLanguage();
-                // Session::put('language', $defaultLanguage);
-                // Session::put('locale', $defaultLanguage->code);
-                Session::save();
-                // app()->setLocale($defaultLanguage->code);
-                Artisan::call('cache:clear');
-                $view->with('language', $cache->getDefaultLanguage());
+
+                // Check if $defaultLanguage is not null
+                if ($defaultLanguage) {
+                    Session::put('language', $defaultLanguage);
+                    Session::put('locale', $defaultLanguage->code);
+                    Session::save();
+                    app()->setLocale($defaultLanguage->code);
+                    Artisan::call('cache:clear');
+                    $view->with('language', $defaultLanguage);
+                } else {
+                    // Provide a fallback object with expected properties
+                    $fallbackLanguage = (object)[
+                        'code' => 'en',
+                        'rtl' => false, // Assuming false; adjust based on your needs
+                    ];
+                    $view->with('language', $fallbackLanguage);
+                }
             }
         });
 
+        /*** Auth Login Blade File ***/
         View::composer('auth.login', static function (\Illuminate\View\View $view) use ($cache) {
-            $cache = app(CachingService::class);
-                $defaultLanguage = $cache->getDefaultLanguage();
+            $defaultLanguage = $cache->getDefaultLanguage();
+
+            // Check if $defaultLanguage is not null
+            if ($defaultLanguage) {
                 Session::put('language', $defaultLanguage);
-                // Session::put('locale', $defaultLanguage->code);
+                Session::put('locale', $defaultLanguage->code);
                 Session::save();
-                // app()->setLocale($defaultLanguage->code);
+                app()->setLocale($defaultLanguage->code);
                 Artisan::call('cache:clear');
-                $view->with('language', $cache->getDefaultLanguage());
+                $view->with('language', $defaultLanguage);
+            } else {
+                // Provide a fallback object with expected properties
+                $fallbackLanguage = (object)[
+                    'code' => 'en',
+                    'rtl' => false,
+                ];
+                $view->with('language', $fallbackLanguage);
+            }
         });
     }
 }

@@ -59,14 +59,18 @@ class PropertController extends Controller
         if (!has_permissions('create', 'property')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         } else {
-            $category = Category::where('status', '1')->get();
+            $commercialCategories = Category::where('status', '1')->where('category_type', 0)->get();
+            // dd($commercialCategories);
+            $residentialCategories = Category::where('status', '1')->where('category_type', 1)->get();
+            $industrialCategories = Category::where('status', '1')->where('category_type', 2)->get();
 
 
+            $customers=Customer::all();
 
             $parameters = parameter::all();
             $currency_symbol = Setting::where('type', 'currency_symbol')->pluck('data')->first();
             $facility = OutdoorFacilities::all();
-            return view('property.create', compact('category', 'parameters', 'currency_symbol', 'facility'));
+            return view('property.create', compact('customers','commercialCategories','residentialCategories','industrialCategories', 'parameters', 'currency_symbol', 'facility'));
         }
     }
 
@@ -110,7 +114,7 @@ class PropertController extends Controller
             $Saveproperty->longitude = (isset($request->longitude)) ? $request->longitude : '';
             $Saveproperty->video_link = (isset($request->video_link)) ? $request->video_link : '';
             $Saveproperty->post_type = 0;
-            $Saveproperty->added_by = 0;
+            $Saveproperty->added_by =(isset($request->customer)) ? $request->customer : '';
             $Saveproperty->meta_title = isset($request->meta_title) ? $request->meta_title : $request->title;
             $Saveproperty->meta_description = $request->meta_description;
             $Saveproperty->meta_keywords = $request->keywords;
@@ -166,6 +170,7 @@ class PropertController extends Controller
 
                     $assign_parameter = new AssignParameters();
                     $assign_parameter->parameter_id = $par->id;
+                    $assign_parameter->property_id = $Saveproperty->id;
                     if (($request->hasFile('par_' . $par->id))) {
                         $destinationPath = public_path('images') . config('global.PARAMETER_IMG_PATH');
                         if (!is_dir($destinationPath)) {
@@ -222,7 +227,7 @@ class PropertController extends Controller
                 return [$item['id'] => $item['category']];
             });
             $category = Category::where('status', '1')->get();
-            $list = Property::with('assignParameter.parameter')->where('id', $id)->get()->first();
+            $list = Property::with('assignParameter.parameter')->where('id', $id)->first();
 
             $categoryData = Category::find($list->category_id);
 
@@ -259,7 +264,13 @@ class PropertController extends Controller
             }
             $currency_symbol = Setting::where('type', 'currency_symbol')->pluck('data')->first();
             $parameters = parameter::all();
-            return view('property.edit', compact('category', 'facility', 'assignFacility', 'edit_parameters', 'list', 'id', 'par_arr', 'parameters', 'par_id', 'currency_symbol'));
+                  $commercialCategories = Category::where('status', '1')->where('category_type', 0)->get();
+            // dd($commercialCategories);
+            $residentialCategories = Category::where('status', '1')->where('category_type', 1)->get();
+            $industrialCategories = Category::where('status', '1')->where('category_type', 2)->get();
+                // dd($list->propery_type);
+                $selected_parameters = $list->assignParameter->pluck('parameter_id')->toArray();
+            return view('property.edit', compact("industrialCategories","commercialCategories","residentialCategories",'category', 'facility', 'assignFacility', 'edit_parameters', 'list', 'id', 'par_arr', 'parameters', 'par_id', 'currency_symbol','selected_parameters'));
         }
     }
 
@@ -357,25 +368,46 @@ class PropertController extends Controller
             }
             $parameters = parameter::all();
 
+            // Delete previous assignments for this modal (property) ID
             AssignParameters::where('modal_id', $id)->delete();
 
             foreach ($parameters as $par) {
-
+                // Check if the checkbox for this parameter is checked
                 if ($request->has('par_' . $par->id)) {
-                    $update_parameter = new AssignParameters();
-                    $update_parameter->parameter_id = $par->id;
+                    // If checked, get the value
+                    $parameterInput = $request->input('par_' . $par->id);
 
-
-                    if (($request->hasFile('par_' . $par->id))) {
-                        $update_parameter->value = \store_image($request->file('par_' . $par->id), 'PARAMETER_IMG_PATH');
+                    // Check if there is a file uploaded
+                    if ($request->hasFile('par_' . $par->id)) {
+                        $value = \store_image($request->file('par_' . $par->id), 'PARAMETER_IMG_PATH');
                     } else {
-                        $update_parameter->value = is_array($request->input('par_' . $par->id)) || $request->input('par_' . $par->id) == null ? json_encode($request->input('par_' . $par->id), JSON_FORCE_OBJECT) : ($request->input('par_' . $par->id));
+                        // Use the provided input or set it as null if no input is given
+                        $value = !empty($parameterInput) ? $parameterInput : null;
                     }
 
-                    $update_parameter->modal()->associate($UpdateProperty);
-                    $update_parameter->save();
+                    // If value is empty or null, we delete the record (set null or delete)
+                    if (is_null($value)) {
+                        // Optionally, delete the assignment if unchecked or if value is null
+                        AssignParameters::where('parameter_id', $par->id)
+                            ->where('property_id', $id)
+                            ->delete();
+                    } else {
+                        // If the checkbox is checked, save or update the assignment
+                        $update_parameter = new AssignParameters();
+                        $update_parameter->parameter_id = $par->id;
+                        $update_parameter->property_id = $id;
+                        $update_parameter->value = $value;
+                        $update_parameter->modal()->associate($UpdateProperty);
+                        $update_parameter->save();
+                    }
+                } else {
+                    // If checkbox is unchecked, delete the assignment
+                    AssignParameters::where('parameter_id', $par->id)
+                        ->where('property_id', $id)
+                        ->delete();
                 }
             }
+
 
             /// START :: UPLOAD GALLERY IMAGE
 
@@ -577,17 +609,14 @@ class PropertController extends Controller
             $tempRow['property_type_raw'] = $row->getRawOriginal('propery_type');
 
             // Operation buttons based on permissions
-            if ($row->added_by == 0) {
+
                 $operate = '';
-                if (has_permissions('update', 'property')) {
+
                     $operate = BootstrapTableService::editButton(route('property.edit', $row->id), false);
-                }
-                if (has_permissions('delete', 'property')) {
+
                     $operate .= BootstrapTableService::deleteButton(route('property.destroy', $row->id));
-                }
-            } else {
-                $operate = BootstrapTableService::deleteButton(route('property.destroy', $row->id));
-            }
+
+
 
             // Handling interested users
             $interested_users = array();
@@ -619,7 +648,7 @@ class PropertController extends Controller
             $tempRow['interested_users'] = $operate1;
 
             // Add customer details
-            if ($row->added_by != 0) {
+            if ($row->added_by != 0 ) {
                 $tempRow['added_by'] = $row->customer->name;
                 $tempRow['mobile'] = env('DEMO_MODE') ? (Auth::user()->email == 'superadmin@gmail.com' ? $row->customer->mobile : '****************************') : $row->customer->mobile;
             } else {
@@ -739,17 +768,11 @@ class PropertController extends Controller
             $tempRow['property_type_raw'] = $row->getRawOriginal('propery_type');
 
             // Operation buttons based on permissions
-            if ($row->added_by == 0) {
-                $operate = '';
-                if (has_permissions('update', 'property')) {
-                    $operate = BootstrapTableService::editButton(route('property.edit', $row->id), false);
-                }
-                if (has_permissions('delete', 'property')) {
-                    $operate .= BootstrapTableService::deleteButton(route('property.destroy', $row->id));
-                }
-            } else {
-                $operate = BootstrapTableService::deleteButton(route('property.destroy', $row->id));
-            }
+            $operate = '';
+
+            $operate = BootstrapTableService::editButton(route('property.edit', $row->id), false);
+
+            $operate .= BootstrapTableService::deleteButton(route('property.destroy', $row->id));
 
             // Handling interested users
             $interested_users = array();
@@ -907,17 +930,11 @@ class PropertController extends Controller
             $tempRow['property_type_raw'] = $row->getRawOriginal('propery_type');
 
             // Operation buttons based on permissions
-            if ($row->added_by == 0) {
-                $operate = '';
-                if (has_permissions('update', 'property')) {
-                    $operate = BootstrapTableService::editButton(route('property.edit', $row->id), false);
-                }
-                if (has_permissions('delete', 'property')) {
-                    $operate .= BootstrapTableService::deleteButton(route('property.destroy', $row->id));
-                }
-            } else {
-                $operate = BootstrapTableService::deleteButton(route('property.destroy', $row->id));
-            }
+            $operate = '';
+
+            $operate = BootstrapTableService::editButton(route('property.edit', $row->id), false);
+
+            $operate .= BootstrapTableService::deleteButton(route('property.destroy', $row->id));
 
             // Handling interested users
             $interested_users = array();

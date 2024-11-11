@@ -229,9 +229,14 @@ class ApiController extends Controller
                 $saveCustomer->facebook_id = isset($request->facebook_id) ? $request->facebook_id : '';
                 $saveCustomer->twiiter_id = isset($request->twiiter_id) ? $request->twiiter_id : '';
                 $saveCustomer->instagram_id = isset($request->instagram_id) ? $request->instagram_id : '';
+                $saveCustomer->instagram_id = isset($request->instagram_id) ? $request->instagram_id : '';
+                $saveCustomer->instagram_id = isset($request->instagram_id) ? $request->instagram_id : '';
                 $saveCustomer->isActive = 1;
+                $saveCustomer->trash = 0;
+                $saveCustomer->notification_seen = 1;
                 $saveCustomer->doc_verification_status = 0; //0:not verified
-                //false
+                $saveCustomer->profile_verify = 0; //0:not verified
+
 
 
 
@@ -546,7 +551,10 @@ class ApiController extends Controller
                     'country',
                     'user_document',
                     'doc_verification_status',
-                    'otp_verified'
+                    'otp_verified',
+                    'isActive',
+                    'profile_verify'
+
                 ]);
 
 
@@ -739,6 +747,10 @@ class ApiController extends Controller
             $property = $property->where('propery_type', $request->property_type);
         }
 
+        if ($request->has('featured_property') && !empty($request->featured_property)) {
+            $property = $property->where('featured_property', $request->featured_property);
+        }
+
         // Date filters
         if ($request->has('posted_since') && !empty($request->posted_since)) {
             $posted_since = $request->posted_since;
@@ -806,12 +818,15 @@ class ApiController extends Controller
                     'error' => false,
                     'message' => "No data found!",
                     'data' => [],
+                    'total' => $total,
+
                 ];
             }
         } catch (\Exception $e) {
             // Log the error and return a response
             Log::error("Error fetching properties: " . $e->getMessage());
-            return response()->json(['error' => true, 'message' => 'An error occurred while fetching properties. Please try again later.'], 500);
+            return response()->json(
+                ['error' => true,"error" =>$e->getMEssage(), 'message' => 'An error occurred while fetching properties. Please try again later.'], 500);
         }
 
         return response()->json($response);
@@ -892,6 +907,7 @@ class ApiController extends Controller
                 $saveProperty->whatsapp_number = (isset($request->whatsapp_number)) ? $request->whatsapp_number : "";
                 $saveProperty->package_id = $request->package_id;
                 $saveProperty->post_type = 1;
+                $saveProperty->featured_property= 0 ;
 
                 //Title Image
                 if ($request->hasFile('title_image')) {
@@ -1051,7 +1067,10 @@ class ApiController extends Controller
             DB::rollback();
             $response = array(
                 'error' => true,
-                'message' => 'Something Went Wrong'
+                'message' => 'Something Went Wrong',
+                'exception' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             );
             return response()->json($response, 500);
         }
@@ -1228,6 +1247,16 @@ class ApiController extends Controller
                     if (isset($request->city)) {
                         $property->city = $request->city;
                     }
+                    if (isset($request->square_yd)) {
+                        $property->square_yd = $request->square_yd;
+                    }
+                    if (isset($request->featured_property)) {
+                        $property->featured_property = $request->featured_property;
+                    }
+                    if (isset($request->whatsapp_number)) {
+                        $property->whatsapp_number = $request->whatsapp_number;
+                    }
+
                     if (isset($request->status)) {
                         $property->status = $request->status;
                     }
@@ -1240,6 +1269,8 @@ class ApiController extends Controller
                     if (isset($request->rentduration)) {
                         $property->rentduration = $request->rentduration;
                     }
+                    $property->city=$request->city;
+                    $property->video_link= $request->video_link;
                     $property->meta_title = $request->meta_title;
                     $property->meta_description = $request->meta_description;
                     $property->meta_keywords = $request->meta_keywords;
@@ -1559,7 +1590,10 @@ class ApiController extends Controller
             DB::rollback();
             $response = array(
                 'error' => true,
-                'message' => 'Something Went Wrong'
+                'message' => 'Something Went Wrong',
+                'exception' => $e->getMessage(),  // Retrieves the error message
+                'file' => $e->getFile(),          // Retrieves the file where the error occurred
+                'line' => $e->getLine()
             );
             return response()->json($response, 500);
         }
@@ -1767,6 +1801,7 @@ class ApiController extends Controller
                 $favourite->save();
                 $response['error'] = false;
                 $response['message'] = "Property add to Favourite add successfully";
+                $response['data'] = $favourite;
             }
             //delete favourite
             if ($request->type == 0) {
@@ -3729,212 +3764,212 @@ class ApiController extends Controller
 
         return response()->json($response);
     }
-    public function post_project(Request $request)
-    {
-        if ($request->has('id')) {
-            $validator = Validator::make($request->all(), [
-                'title' => 'required',
-            ]);
-        } else {
-            $validator = Validator::make($request->all(), [
-                'title' => 'required',
-                'description' => 'required',
-                'image' => 'required|file|max:3000|mimes:jpeg,png,jpg',
-                'category_id' => 'required',
-                'city' => 'required',
-                'state' => 'required',
-                'country' => 'required',
-            ]);
-        }
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->first(),
-            ]);
-        }
-        try {
-            DB::beginTransaction();
-            $currentUser = Auth::user()->id;
+    // public function post_project(Request $request)
+    // {
+    //     if ($request->has('id')) {
+    //         $validator = Validator::make($request->all(), [
+    //             'title' => 'required',
+    //         ]);
+    //     } else {
+    //         $validator = Validator::make($request->all(), [
+    //             'title' => 'required',
+    //             'description' => 'required',
+    //             'image' => 'required|file|max:3000|mimes:jpeg,png,jpg',
+    //             'category_id' => 'required',
+    //             'city' => 'required',
+    //             'state' => 'required',
+    //             'country' => 'required',
+    //         ]);
+    //     }
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'error' => true,
+    //             'message' => $validator->errors()->first(),
+    //         ]);
+    //     }
+    //     try {
+    //         DB::beginTransaction();
+    //         $currentUser = Auth::user()->id;
 
-            if (!(isset($request->id))) {
-                $currentPackage = $this->getCurrentPackage($currentUser, 1);
-                if (!($currentPackage)) {
-                    $response['error'] = false;
-                    $response['message'] = 'Package not found';
-                    return response()->json($response);
-                }
-                $project = new Projects();
-            } else {
-                $project = Projects::where('added_by', $currentUser)->find($request->id);
-                if (!$project) {
-                    $response['error'] = false;
-                    $response['message'] = 'Project Not Found ';
-                }
-            }
+    //         if (!(isset($request->id))) {
+    //             $currentPackage = $this->getCurrentPackage($currentUser, 1);
+    //             if (!($currentPackage)) {
+    //                 $response['error'] = false;
+    //                 $response['message'] = 'Package not found';
+    //                 return response()->json($response);
+    //             }
+    //             $project = new Projects();
+    //         } else {
+    //             $project = Projects::where('added_by', $currentUser)->find($request->id);
+    //             if (!$project) {
+    //                 $response['error'] = false;
+    //                 $response['message'] = 'Project Not Found ';
+    //             }
+    //         }
 
-            if ($request->category_id) {
-                $project->category_id = $request->category_id;
-            }
-            if ($request->description) {
-                $project->description = $request->description;
-            }
-            if ($request->location) {
-                $project->location = $request->location;
-            }
-            if ($request->meta_title) {
-                $project->meta_title = $request->meta_title;
-            }
-            if ($request->meta_description) {
-                $project->meta_description = $request->meta_description;
-            }
-            if ($request->meta_keywords) {
-                $project->meta_keywords = $request->meta_keywords;
-            }
-            $project->added_by = $currentUser;
-            if ($request->country) {
-                $project->country = $request->country;
-            }
-            if ($request->state) {
-                $project->state = $request->state;
-            }
-            if ($request->city) {
-                $project->city = $request->city;
-            }
-            if ($request->latitude) {
-                $project->latitude = $request->latitude;
-            }
-            if ($request->longitude) {
-                $project->longitude = $request->longitude;
-            }
-            if ($request->video_link) {
-                $project->video_link = $request->video_link;
-            }
-            if ($request->type) {
-                $project->type = $request->type;
-            }
-            if ($request->id) {
-                if ($project->title !== $request->title) {
-                    $title = !empty($request->title) ? $request->title : $project->title;
-                    $project->title = $title;
-                    $project->slug_id = generateUniqueSlug($title, 4);
-                } else {
-                    $title = $request->title;
-                    $project->title = $title;
-                }
-                if ($request->hasFile('image')) {
-                    $project->image = store_image($request->file('image'), 'PROJECT_TITLE_IMG_PATH');
-                }
-                if ($request->hasFile('meta_image')) {
-                    $project->meta_image = store_image($request->file('meta_image'), 'PROJECT_SEO_IMG_PATH');
-                } else {
-                    if ($project->meta_image) {
-                        unlink_image($project->meta_image);
-                    }
-                    $project->meta_image = "";
-                }
-            } else {
-                $project->title = $request->title;
-                $project->image = $request->hasFile('image') ? store_image($request->file('image'), 'PROJECT_TITLE_IMG_PATH') : '';
-                $project->meta_image = $request->hasFile('meta_image') ? store_image($request->file('meta_image'), 'PROJECT_SEO_IMG_PATH') : '';
-                $title = $request->title;
-                $project->slug_id = generateUniqueSlug($title, 4);
-            }
+    //         if ($request->category_id) {
+    //             $project->category_id = $request->category_id;
+    //         }
+    //         if ($request->description) {
+    //             $project->description = $request->description;
+    //         }
+    //         if ($request->location) {
+    //             $project->location = $request->location;
+    //         }
+    //         if ($request->meta_title) {
+    //             $project->meta_title = $request->meta_title;
+    //         }
+    //         if ($request->meta_description) {
+    //             $project->meta_description = $request->meta_description;
+    //         }
+    //         if ($request->meta_keywords) {
+    //             $project->meta_keywords = $request->meta_keywords;
+    //         }
+    //         $project->added_by = $currentUser;
+    //         if ($request->country) {
+    //             $project->country = $request->country;
+    //         }
+    //         if ($request->state) {
+    //             $project->state = $request->state;
+    //         }
+    //         if ($request->city) {
+    //             $project->city = $request->city;
+    //         }
+    //         if ($request->latitude) {
+    //             $project->latitude = $request->latitude;
+    //         }
+    //         if ($request->longitude) {
+    //             $project->longitude = $request->longitude;
+    //         }
+    //         if ($request->video_link) {
+    //             $project->video_link = $request->video_link;
+    //         }
+    //         if ($request->type) {
+    //             $project->type = $request->type;
+    //         }
+    //         if ($request->id) {
+    //             if ($project->title !== $request->title) {
+    //                 $title = !empty($request->title) ? $request->title : $project->title;
+    //                 $project->title = $title;
+    //                 $project->slug_id = generateUniqueSlug($title, 4);
+    //             } else {
+    //                 $title = $request->title;
+    //                 $project->title = $title;
+    //             }
+    //             if ($request->hasFile('image')) {
+    //                 $project->image = store_image($request->file('image'), 'PROJECT_TITLE_IMG_PATH');
+    //             }
+    //             if ($request->hasFile('meta_image')) {
+    //                 $project->meta_image = store_image($request->file('meta_image'), 'PROJECT_SEO_IMG_PATH');
+    //             } else {
+    //                 if ($project->meta_image) {
+    //                     unlink_image($project->meta_image);
+    //                 }
+    //                 $project->meta_image = "";
+    //             }
+    //         } else {
+    //             $project->title = $request->title;
+    //             $project->image = $request->hasFile('image') ? store_image($request->file('image'), 'PROJECT_TITLE_IMG_PATH') : '';
+    //             $project->meta_image = $request->hasFile('meta_image') ? store_image($request->file('meta_image'), 'PROJECT_SEO_IMG_PATH') : '';
+    //             $title = $request->title;
+    //             $project->slug_id = generateUniqueSlug($title, 4);
+    //         }
 
-            $project->save();
+    //         $project->save();
 
-            if ($request->remove_gallery_images) {
-                $remove_gallery_images = explode(',', $request->remove_gallery_images);
-                foreach ($remove_gallery_images as $key => $value) {
-                    $gallary_images = ProjectDocuments::find($value);
-                    unlink_image($gallary_images->name);
-                    $gallary_images->delete();
-                }
-            }
+    //         if ($request->remove_gallery_images) {
+    //             $remove_gallery_images = explode(',', $request->remove_gallery_images);
+    //             foreach ($remove_gallery_images as $key => $value) {
+    //                 $gallary_images = ProjectDocuments::find($value);
+    //                 unlink_image($gallary_images->name);
+    //                 $gallary_images->delete();
+    //             }
+    //         }
 
-            if ($request->remove_documents) {
-                $remove_documents = explode(',', $request->remove_documents);
-                foreach ($remove_documents as $key => $value) {
-                    $gallary_images = ProjectDocuments::find($value);
-                    unlink_image($gallary_images->name);
-                    $gallary_images->delete();
-                }
-            }
+    //         if ($request->remove_documents) {
+    //             $remove_documents = explode(',', $request->remove_documents);
+    //             foreach ($remove_documents as $key => $value) {
+    //                 $gallary_images = ProjectDocuments::find($value);
+    //                 unlink_image($gallary_images->name);
+    //                 $gallary_images->delete();
+    //             }
+    //         }
 
-            if ($request->hasfile('gallery_images')) {
-                foreach ($request->file('gallery_images') as $file) {
-                    $gallary_image = new ProjectDocuments();
-                    $gallary_image->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
-                    $gallary_image->project_id = $project->id;
-                    $gallary_image->type = 'image';
-                    $gallary_image->save();
-                }
-            }
+    //         if ($request->hasfile('gallery_images')) {
+    //             foreach ($request->file('gallery_images') as $file) {
+    //                 $gallary_image = new ProjectDocuments();
+    //                 $gallary_image->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
+    //                 $gallary_image->project_id = $project->id;
+    //                 $gallary_image->type = 'image';
+    //                 $gallary_image->save();
+    //             }
+    //         }
 
-            if ($request->hasfile('documents')) {
-                foreach ($request->file('documents') as $file) {
-                    $project_documents = new ProjectDocuments();
-                    $project_documents->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
-                    $project_documents->project_id = $project->id;
-                    $project_documents->type = 'doc';
-                    $project_documents->save();
-                }
-            }
+    //         if ($request->hasfile('documents')) {
+    //             foreach ($request->file('documents') as $file) {
+    //                 $project_documents = new ProjectDocuments();
+    //                 $project_documents->name = store_image($file, 'PROJECT_DOCUMENT_PATH');
+    //                 $project_documents->project_id = $project->id;
+    //                 $project_documents->type = 'doc';
+    //                 $project_documents->save();
+    //             }
+    //         }
 
-            if ($request->plans) {
-                foreach ($request->plans as $key => $plan) {
-                    if (isset($plan['id']) && $plan['id'] != '') {
-                        $project_plans =  ProjectPlans::find($plan['id']);
-                    } else {
-                        $project_plans = new ProjectPlans();
-                    }
-                    if (isset($plan['document'])) {
-                        $project_plans->document = store_image($plan['document'], 'PROJECT_DOCUMENT_PATH');
-                    }
-                    $project_plans->title = $plan['title'];
-                    $project_plans->project_id = $project->id;
-                    $project_plans->save();
-                }
-            }
+    //         if ($request->plans) {
+    //             foreach ($request->plans as $key => $plan) {
+    //                 if (isset($plan['id']) && $plan['id'] != '') {
+    //                     $project_plans =  ProjectPlans::find($plan['id']);
+    //                 } else {
+    //                     $project_plans = new ProjectPlans();
+    //                 }
+    //                 if (isset($plan['document'])) {
+    //                     $project_plans->document = store_image($plan['document'], 'PROJECT_DOCUMENT_PATH');
+    //                 }
+    //                 $project_plans->title = $plan['title'];
+    //                 $project_plans->project_id = $project->id;
+    //                 $project_plans->save();
+    //             }
+    //         }
 
 
-            if ($request->remove_plans) {
-                $remove_plans = explode(',', $request->remove_plans);
-                foreach ($remove_plans as $key => $value) {
-                    $project_plans = ProjectPlans::find($value);
-                    unlink_image($project_plans->document);
-                    $project_plans->delete();
-                }
-            }
-            if (!(isset($request->id))) {
-                $newPropertyLimitCount = 0;
-                // Increment the property limit count
-                $newPropertyLimitCount = $currentPackage->used_limit_for_property + 1;
-                if ($currentPackage->package->property_limit == null) {
-                    $addPropertyStatus = 1;
-                } else if ($newPropertyLimitCount >= $currentPackage->package->property_limit) {
-                    $addPropertyStatus = 0;
-                } else {
-                    $addPropertyStatus = 1;
-                }
-                // Update the Limit and status
-                UserPurchasedPackage::where('id', $currentPackage->id)->update(['used_limit_for_property' => $newPropertyLimitCount, 'prop_status' => $addPropertyStatus]);
-            }
-            $result = Projects::with('customer')->with('gallary_images')->with('documents')->with('plans')->with('category:id,category,image')->where('id', $project->id)->get();
+    //         if ($request->remove_plans) {
+    //             $remove_plans = explode(',', $request->remove_plans);
+    //             foreach ($remove_plans as $key => $value) {
+    //                 $project_plans = ProjectPlans::find($value);
+    //                 unlink_image($project_plans->document);
+    //                 $project_plans->delete();
+    //             }
+    //         }
+    //         if (!(isset($request->id))) {
+    //             $newPropertyLimitCount = 0;
+    //             // Increment the property limit count
+    //             $newPropertyLimitCount = $currentPackage->used_limit_for_property + 1;
+    //             if ($currentPackage->package->property_limit == null) {
+    //                 $addPropertyStatus = 1;
+    //             } else if ($newPropertyLimitCount >= $currentPackage->package->property_limit) {
+    //                 $addPropertyStatus = 0;
+    //             } else {
+    //                 $addPropertyStatus = 1;
+    //             }
+    //             // Update the Limit and status
+    //             UserPurchasedPackage::where('id', $currentPackage->id)->update(['used_limit_for_property' => $newPropertyLimitCount, 'prop_status' => $addPropertyStatus]);
+    //         }
+    //         $result = Projects::with('customer')->with('gallary_images')->with('documents')->with('plans')->with('category:id,category,image')->where('id', $project->id)->get();
 
-            DB::commit();
-            $response['error'] = false;
-            $response['message'] = isset($request->id) ? 'Project Updated Successfully' : 'Project Post Succssfully';
-            $response['data'] = $result;
-            return response()->json($response);
-        } catch (Exception $e) {
-            DB::rollback();
-            $response = array(
-                'error' => true,
-                'message' => 'Something Went Wrong'
-            );
-            return response()->json($response, 500);
-        }
-    }
+    //         DB::commit();
+    //         $response['error'] = false;
+    //         $response['message'] = isset($request->id) ? 'Project Updated Successfully' : 'Project Post Succssfully';
+    //         $response['data'] = $result;
+    //         return response()->json($response);
+    //     } catch (Exception $e) {
+    //         DB::rollback();
+    //         $response = array(
+    //             'error' => true,
+    //             'message' => 'Something Went Wrong'
+    //         );
+    //         return response()->json($response, 500);
+    //     }
+    // }
     public function delete_project(Request $request)
     {
         $current_user = Auth::user()->id;
@@ -3996,124 +4031,124 @@ class ApiController extends Controller
         }
         return response()->json($response);
     }
-    public function get_projects(Request $request)
-    {
-        $offset = isset($request->offset) ? $request->offset : 0;
-        $limit = isset($request->limit) ? $request->limit : 10;
+    // public function get_projects(Request $request)
+    // {
+    //     $offset = isset($request->offset) ? $request->offset : 0;
+    //     $limit = isset($request->limit) ? $request->limit : 10;
 
 
-        $project = Projects::select('*')->with('customer:id,name,profile,email,mobile,address')->with('gallary_images')->with('documents')->with('plans')->with('category:id,category,image');
+    //     $project = Projects::select('*')->with('customer:id,name,profile,email,mobile,address')->with('gallary_images')->with('documents')->with('plans')->with('category:id,category,image');
 
-        $userid = $request->userid;
-        $posted_since = $request->posted_since;
-        $category_id = $request->category_id;
-        $id = $request->id;
-        $country = $request->country;
-        $state = $request->state;
-        $city = $request->city;
+    //     $userid = $request->userid;
+    //     $posted_since = $request->posted_since;
+    //     $category_id = $request->category_id;
+    //     $id = $request->id;
+    //     $country = $request->country;
+    //     $state = $request->state;
+    //     $city = $request->city;
 
-        if (isset($userid)) {
-            $project = $project->where('added_by', $userid);
-        } else {
-            $project = $project->where('status', 1);
-        }
-
-
-
-
-        if (isset($posted_since)) {
-            // 0: last_week   1: yesterday
-            if ($posted_since == 0) {
-                $project = $project->whereBetween(
-                    'created_at',
-                    [Carbon::now()->subWeek()->startOfWeek(), Carbon::now()->subWeek()->endOfWeek()]
-                );
-            }
-            if ($posted_since == 1) {
-                $project =  $project->whereDate('created_at', Carbon::yesterday());
-            }
-        }
-
-        if (isset($category_id)) {
-            $project = $project->where('category_id', $category_id);
-        }
-        if (isset($id)) {
-            if (isset($request->get_simiilar)) {
-                $project = $project->where('id', '!=', $id);
-            } else {
-
-                $project = $project->where('id', $id);
-            }
-        }
-
-
-        if (isset($request->slug_id)) {
-
-
-            $category = Category::where('slug_id', $request->slug_id)->first();
-
-            if ($category) {
-
-                $project = $project->where('category_id', $category->id);
-            } else {
-
-
-                if (isset($request->get_similar)) {
-
-                    $project = $project->where('slug_id', '!=', $request->slug_id);
-                } else {
-                    DB::enableQueryLog();
-                    $project = $project->where('slug_id', $request->slug_id);
-                }
-            }
-        }
-
-        if (isset($country)) {
-            $project = $project->where('country', $country);
-        }
-        if (isset($state)) {
-            $project = $project->where('state', $state);
-        }
-        if (isset($city) && $city != '') {
-            $project = $project->where('city', $city);
-        }
+    //     if (isset($userid)) {
+    //         $project = $project->where('added_by', $userid);
+    //     } else {
+    //         $project = $project->where('status', 1);
+    //     }
 
 
 
-        if (isset($request->search) && !empty($request->search)) {
-            $search = $request->search;
 
-            $project = $project->where(function ($query) use ($search) {
-                $query->where('title', 'LIKE', "%$search%")->orwhere('address', 'LIKE', "%$search%")->orwhereHas('category', function ($query1) use ($search) {
-                    $query1->where('category', 'LIKE', "%$search%");
-                });
-            });
-        }
+    //     if (isset($posted_since)) {
+    //         // 0: last_week   1: yesterday
+    //         if ($posted_since == 0) {
+    //             $project = $project->whereBetween(
+    //                 'created_at',
+    //                 [Carbon::now()->subWeek()->startOfWeek(), Carbon::now()->subWeek()->endOfWeek()]
+    //             );
+    //         }
+    //         if ($posted_since == 1) {
+    //             $project =  $project->whereDate('created_at', Carbon::yesterday());
+    //         }
+    //     }
+
+    //     if (isset($category_id)) {
+    //         $project = $project->where('category_id', $category_id);
+    //     }
+    //     if (isset($id)) {
+    //         if (isset($request->get_simiilar)) {
+    //             $project = $project->where('id', '!=', $id);
+    //         } else {
+
+    //             $project = $project->where('id', $id);
+    //         }
+    //     }
+
+
+    //     if (isset($request->slug_id)) {
+
+
+    //         $category = Category::where('slug_id', $request->slug_id)->first();
+
+    //         if ($category) {
+
+    //             $project = $project->where('category_id', $category->id);
+    //         } else {
+
+
+    //             if (isset($request->get_similar)) {
+
+    //                 $project = $project->where('slug_id', '!=', $request->slug_id);
+    //             } else {
+    //                 DB::enableQueryLog();
+    //                 $project = $project->where('slug_id', $request->slug_id);
+    //             }
+    //         }
+    //     }
+
+    //     if (isset($country)) {
+    //         $project = $project->where('country', $country);
+    //     }
+    //     if (isset($state)) {
+    //         $project = $project->where('state', $state);
+    //     }
+    //     if (isset($city) && $city != '') {
+    //         $project = $project->where('city', $city);
+    //     }
 
 
 
-        $total = $project->get()->count();
+    //     if (isset($request->search) && !empty($request->search)) {
+    //         $search = $request->search;
 
-        $result = $project->skip($offset)->take($limit)->get();
+    //         $project = $project->where(function ($query) use ($search) {
+    //             $query->where('title', 'LIKE', "%$search%")->orwhere('address', 'LIKE', "%$search%")->orwhereHas('category', function ($query1) use ($search) {
+    //                 $query1->where('category', 'LIKE', "%$search%");
+    //             });
+    //         });
+    //     }
 
 
-        if (!$result->isEmpty()) {
+
+    //     $total = $project->get()->count();
+
+    //     $result = $project->skip($offset)->take($limit)->get();
+
+
+    //     if (!$result->isEmpty()) {
 
 
 
-            $response['error'] = false;
-            $response['message'] = "Data Fetch Successfully";
+    //         $response['error'] = false;
+    //         $response['message'] = "Data Fetch Successfully";
 
-            $response['total'] = $total;
-            $response['data'] = $result;
-        } else {
+    //         $response['total'] = $total;
+    //         $response['data'] = $result;
+    //     } else {
 
-            $response['error'] = false;
-            $response['message'] = "No data found!";
-            $response['data'] = [];
-        }
-        return response()->json($response);
-    }
+    //         $response['error'] = false;
+    //         $response['message'] = "No data found!";
+    //         $response['data'] = [];
+    //     }
+    //     return response()->json($response);
+    // }
 
     public function getUserPersonalisedInterest(Request $request)
     {

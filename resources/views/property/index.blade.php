@@ -533,8 +533,8 @@
 
         function PropertyCustomerStatusFormatter(value, row, index) {
             return value == 1 ?
-                '<span class="bg-success p-2 rounded-1 text-light fw-bold">Verified</span>' :
-                '<span class=" p-2 rounded-1 text-light fw-bold" style="background-color:#f75454">Unverified</span>';
+                '<span>Verified</span>' :
+                '<span>Unverified</span>';
         }
 
 

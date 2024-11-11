@@ -40,7 +40,8 @@ class CategoryController extends Controller
         } else {
             $request->validate([
                 'image' => 'required|image|mimes:svg|max:2048',
-                'category' => 'required'
+                'category' => 'required',
+                'category_type' => 'required'
             ]);
             $saveCategories = new Category();
 
@@ -59,6 +60,7 @@ class CategoryController extends Controller
             $saveCategories->meta_title = $request->meta_title;
             $saveCategories->meta_description = $request->meta_description;
             $saveCategories->meta_keywords = $request->meta_keywords;
+            $saveCategories->category_type = $request->category_type;
             $saveCategories->save();
             ResponseService::successRedirectResponse('Category Added Successfully');
         }
@@ -126,6 +128,7 @@ class CategoryController extends Controller
             $Category->meta_title = $request->edit_meta_title;
             $Category->meta_description = $request->edit_meta_description;
             $Category->meta_keywords = $request->edit_keywords;
+            $Category->category_type = $request->category_type;
 
             $Category->sequence = ($request->sequence) ? $request->sequence : 0;
             $Category->parameter_types = $request->update_seq;

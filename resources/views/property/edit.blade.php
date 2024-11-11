@@ -1,3 +1,4 @@
+{{-- {{dd($list->propery_type)}} --}}
 @extends('layouts.main')
 @section('title')
     {{ __('Update Product') }}
@@ -44,18 +45,112 @@
                 {{-- Category --}}
                 <div class="card-body" style="height: fit-content">
                     <div class="col-md-12 col-12 form-group mandatory">
-                        {{ Form::label('category', __('Category'), ['class' => 'form-label col-12 ']) }}
-                        <select name="category" class="choosen-select form-select form-control-sm"
-                            data-parsley-minSelect='1' id="category" required='true'>
-                            <option value="">{{ __('Choose Category') }}</option>
-                            @foreach ($category as $row)
-                                <option value="{{ $row->id }}"
-                                    {{ $list->category_id == $row->id ? ' selected=selected' : '' }}
-                                    data-parametertypes='{{ $row->parameter_types }}'> {{ $row->category }}
-                                </option>
-                            @endforeach
-                        </select>
+                        {{ Form::label('propery_type', __('Property Type'), ['class' => 'form-label col-12']) }}
+
+                        <div class="form-check col-md-4 col-sm-12">
+                            {{ Form::radio('property_type',  0, old('property_type', $list->propery_type) == 0, ['class' => 'form-check-input', 'id' => 'commercial']) }}
+                            <label class="form-check-label" for="commercial">{{ __('Commercial') }}</label>
+                        </div>
+
+                        <div class="form-check col-md-4 col-sm-12">
+                            {{ Form::radio('property_type', 1, old('property_type', $list->propery_type) == 1, ['class' => 'form-check-input', 'id' => 'residential']) }}
+                            <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
+                        </div>
+
+                        <div class="form-check col-md-4 col-sm-12">
+                            {{ Form::radio('property_type', 2, old('property_type', $list->propery_type) == 2, ['class' => 'form-check-input', 'id' => 'industrial']) }}
+                            <label class="form-check-label" for="industrial">{{ __('Industrial') }}</label>
+                        </div>
                     </div>
+
+                    <select name="category" class="form-select form-control-sm" id="category" required>
+                        <option value="" selected>{{ __('Choose Category') }}</option>
+
+                        <!-- Commercial Categories -->
+                        @if ($commercialCategories->isEmpty())
+                            <option value="" class="commercial-category" style="display: none;">
+                                {{ __('No Commercial Category Available') }}
+                            </option>
+                        @endif
+                        @foreach ($commercialCategories as $category)
+                            <option value="{{ $category->id }}" class="commercial-category"
+                                {{ $list->category_id == $category->id ? 'selected' : '' }}>
+                                {{ $category->category }}
+                            </option>
+                        @endforeach
+
+                        <!-- Residential Categories -->
+                        @if ($residentialCategories->isEmpty())
+                            <option value="" class="residential-category" style="display: none;">
+                                {{ __('No Residential Category Available') }}
+                            </option>
+                        @endif
+                        @foreach ($residentialCategories as $category)
+                            <option value="{{ $category->id }}" class="residential-category"
+                                {{ $list->category_id == $category->id ? 'selected' : '' }}>
+                                {{ $category->category }}
+                            </option>
+                        @endforeach
+
+                        <!-- Industrial Categories -->
+                        @if ($industrialCategories->isEmpty())
+                            <option value="" class="industrial-category" style="display: none;">
+                                {{ __('No Industrial Category Available') }}
+                            </option>
+                        @endif
+                        @foreach ($industrialCategories as $category)
+                            <option value="{{ $category->id }}" class="industrial-category"
+                                {{ $list->category_id == $category->id ? 'selected' : '' }}>
+                                {{ $category->category }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <script>
+                        // Function to show only relevant categories based on selected property type
+                        function showRelevantCategories() {
+                            var selectedType = document.querySelector('input[name="property_type"]:checked').value;
+
+                            // Hide all categories initially
+                            document.querySelectorAll('.commercial-category').forEach(function(option) {
+                                option.style.display = 'none';
+                            });
+                            document.querySelectorAll('.residential-category').forEach(function(option) {
+                                option.style.display = 'none';
+                            });
+                            document.querySelectorAll('.industrial-category').forEach(function(option) {
+                                option.style.display = 'none';
+                            });
+
+                            // Show categories based on selected property type
+                            if (selectedType == '0') {
+                                document.querySelectorAll('.commercial-category').forEach(function(option) {
+                                    option.style.display = 'block';
+                                });
+                            } else if (selectedType == '1') {
+                                document.querySelectorAll('.residential-category').forEach(function(option) {
+                                    option.style.display = 'block';
+                                });
+                            } else if (selectedType == '2') {
+                                document.querySelectorAll('.industrial-category').forEach(function(option) {
+                                    option.style.display = 'block';
+                                });
+                            }
+                        }
+
+                        // Run the function on page load to show relevant categories based on the current property type
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showRelevantCategories(); // Initial call on page load
+                        });
+
+                        // Attach the event listener to radio buttons to update categories when property type is changed
+                        document.querySelectorAll('input[name="property_type"]').forEach(function(radio) {
+                            radio.addEventListener('change', showRelevantCategories);
+                        });
+                    </script>
+
+
+
 
                     {{-- Title --}}
                     <div class="col-md-12 col-12 form-group mandatory">
@@ -77,7 +172,7 @@
                     </div>
                     <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('square_yd', __('Square Yard'), ['class' => 'form-label col-12 ']) }}
-                        {{ Form::text('square_yd', isset($list->square_yd) ? $list->square_yd : '',  [
+                        {{ Form::text('square_yd', isset($list->square_yd) ? $list->square_yd : '', [
                             'class' => 'form-control ',
                             'name' => 'square_yd',
                             'placeholder' => __('Square Yard'),
@@ -88,7 +183,7 @@
                     {{-- <p> {{ $list }}s</p> --}}
 
                     {{-- Property Type --}}
-                    <div class="col-md-12 col-12 form-group mandatory">
+                    {{-- <div class="col-md-12 col-12 form-group mandatory">
                         {{ Form::label('property_type', __('Property Type'), ['class' => 'form-label col-12']) }}
                         <div class="row ps-3 ">
 
@@ -102,7 +197,7 @@
                                 <label class="form-check-label" for="residential">{{ __('Residential') }}</label>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
 
 
@@ -206,102 +301,112 @@
                 <div class="card-body">
                     <div class="row">
                         @foreach ($facility as $key => $value)
-                            <div class='col-md-3  form-group'>
-                                {{ Form::label('description', $value->name, ['class' => 'form-check-label']) }}
-                                @if (count($value->assign_facilities))
-                                    {{ Form::text('facility' . $value->id, $value->assign_facilities[0]['distance'], ['class' => 'form-control mt-3', 'placeholder' => __('Distance'), 'id' => 'dist' . $value->id]) }}
-                                @else
-                                    {{ Form::text('facility' . $value->id, '', ['class' => 'form-control mt-3', 'placeholder' => __('Distance'), 'id' => 'dist' . $value->id]) }}
-                                @endif
-                            </div>
-                        @endforeach
+                        <div class='col-md-3 form-group'>
+                            {{ Form::checkbox('facility_checkbox_' . $value->id, $value->name, count($value->assign_facilities) > 0, [
+                                'class' => 'form-check-input',
+                                'id' => 'chk' . $value->id,
+                                'onclick' => "toggleDistanceInput({$value->id})"
+                            ]) }}
+                            {{ Form::label('description', $value->name, ['class' => 'form-check-label']) }}
+
+                            {{-- Checkbox - checked if facility is assigned --}}
+
+
+                            {{-- Distance input - visible if facility is assigned --}}
+                            @if (count($value->assign_facilities))
+                                {{ Form::text('facility' . $value->id, $value->assign_facilities[0]['distance'], [
+                                    'class' => 'form-control mt-3',
+                                    'placeholder' => __('Distance'),
+                                    'id' => 'dist' . $value->id,
+                                    'style' => 'display: block;' // Visible by default if checked
+                                ]) }}
+                            @else
+                                {{ Form::text('facility' . $value->id, '', [
+                                    'class' => 'form-control mt-3',
+                                    'placeholder' => __('Distance'),
+                                    'id' => 'dist' . $value->id,
+                                    'style' => 'display: none;' // Hidden by default if unchecked
+                                ]) }}
+                            @endif
+                        </div>
+                    @endforeach
+
+
                     </div>
                 </div>
             </div>
         </div>
+        <script>
+            function toggleDistanceInput(id) {
+                const checkbox = document.getElementById('chk' + id);
+                const distanceInput = document.getElementById('dist' + id);
+
+                // Toggle the display of the distance input based on checkbox state
+                if (checkbox.checked) {
+                    distanceInput.style.display = 'block';
+                } else {
+                    distanceInput.style.display = 'none';
+                }
+            }
+
+            // On page load, ensure visibility matches the initial state
+            document.addEventListener("DOMContentLoaded", function() {
+                @foreach ($facility as $value)
+                    toggleDistanceInput({{ $value->id }});
+                @endforeach
+            });
+        </script>
 
         {{-- Facility --}}
         <div class="col-md-12" id="facility">
             <div class="card">
                 <h3 class="card-header">{{ __('Facilities') }}</h3>
                 <hr>
-                {{ Form::hidden('category_count[]', $category, ['id' => 'category_count']) }}
-                {{ Form::hidden('parameter_count[]', $parameters, ['id' => 'parameter_count']) }}
-                {{ Form::hidden('parameter_add', '', ['id' => 'parameter_add']) }}
-                <div id="parameter_type" name=parameter_type class="row card-body">
-                    @foreach ($edit_parameters as $res)
-                        <div class="col-md-3 form-group">
-                            {{ Form::label($res->name, $res->name, ['class' => 'form-label col-12']) }}
 
-                            {{-- DropDown --}}
-                            @if ($res->type_of_parameter == 'dropdown')
-                                <select name="{{ 'par_' . $res->id }}" class="choosen-select form-select form-control-sm"
-                                    selected=false false name={{ $res->id }}>
-                                    <option value="">{{ __('Select Option') }}</option>
-                                    @foreach ($res->type_values as $key => $value)
-                                        <option value="{{ $value }}"
-                                            {{ $res->assigned_parameter && $res->assigned_parameter->value == $value ? ' selected=selected' : '' }}>
-                                            {{ $value }} </option>
-                                    @endforeach
-                                </select>
-                            @endif
+                <div id="parameter_type" class="row card-body">
+                    @foreach ($parameters as $key => $value)
+                        <div class='col-md-3 form-group'>
+                            @php
+                                // Retrieve the assignment for the parameter if it exists
+                                $assignParameter = $list->assignParameter->where('parameter_id', $value->id)->first();
+                            @endphp
 
-                            {{-- Radio Button --}}
-                            @if ($res->type_of_parameter == 'radiobutton')
-                                @foreach ($res->type_values as $key => $value)
-                                    <input type="radio" name="{{ 'par_' . $res->id }}" id=""
-                                        value={{ $value }} class="form-check-input"
-                                        {{ $res->assigned_parameter && $res->assigned_parameter->value == $value ? 'checked' : '' }}>
-                                    {{ $value }}
-                                @endforeach
-                            @endif
+                            {{-- Checkbox for selecting a parameter --}}
+                            <input type="checkbox" name="par_{{ $value->id }}" id="chk{{ $value->id }}" class="form-check-input"
+                                value="{{ $value->id }}" {{ $assignParameter && $assignParameter->value !== null ? 'checked' : '' }}
+                                onchange="handleCheckboxChange(this, '{{ $value->id }}')">
 
-                            {{-- Number --}}
-                            @if ($res->type_of_parameter == 'number')
-                                <input type="number" name="{{ 'par_' . $res->id }}" id=""
-                                    class="form-control"
-                                    value="{{ $res->assigned_parameter && $res->assigned_parameter != 'null' ? $res->assigned_parameter->value : '' }}">
-                            @endif
+                            <label for="chk{{ $value->id }}" class="form-check-label">{{ $value->name }}</label>
 
-                            {{-- TextBox --}}
-                            @if ($res->type_of_parameter == 'textbox')
-                                <input type="text" name="{{ 'par_' . $res->id }}" id=""
-                                    class="form-control"
-                                    value="{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}">
-                            @endif
+                            {{-- Hidden input to handle unchecked checkbox and send null --}}
+                            <input type="hidden" name="par_{{ $value->id }}_null" id="par_{{ $value->id }}_null" value="null">
 
-                            {{-- TextArea --}}
-                            @if ($res->type_of_parameter == 'textarea')
-                                <textarea name="{{ 'par_' . $res->id }}" id="" class="form-control" cols="30" rows="3"
-                                    value="{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}">{{ $res->assigned_parameter && $res->assigned_parameter->value != 'null' ? $res->assigned_parameter->value : '' }}</textarea>
-                            @endif
-
-                            {{-- CheckBox --}}
-                            @if ($res->type_of_parameter == 'checkbox')
-                                @foreach ($res->type_values as $key => $value)
-                                    <input type="checkbox" name="{{ 'par_' . $res->id . '[]' }}" id=""
-                                        class="form-check-input" value={{ $value }}
-                                        {{ !empty($res->assigned_parameter->value) && in_array($value, $res->assigned_parameter->value) ? 'Checked' : '' }}>{{ $value }}
-                                @endforeach
-                            @endif
-
-                            {{-- FILE --}}
-                            @if ($res->type_of_parameter == 'file')
-                                @if (!empty($res->assigned_parameter->value))
-                                    <a href="{{ url('') . config('global.IMG_PATH') . config('global.PARAMETER_IMG_PATH') . '/' . $res->assigned_parameter->value }}"
-                                        class="text-center col-12" style="text-align: center"> Click here to View</a> OR
-                                @endif
-                                <input type="hidden" name="{{ 'par_' . $res->id }}"
-                                    value="{{ $res->assigned_parameter ? $res->assigned_parameter->value : '' }}">
-                                <input type="file" class='form-control' name="{{ 'par_' . $res->id }}"
-                                    id='edit_param_img'>
-                            @endif
+                            {{-- Text input for the parameter value --}}
+                            <input type="text" name="par_{{ $value->id }}" class="form-control mt-3" placeholder="Facility"
+                                id="dist{{ $value->id }}" value="{{ old('par_' . $value->id, $assignParameter ? $assignParameter->value : '') }}">
                         </div>
-                        {{-- @endforeach --}}
                     @endforeach
                 </div>
             </div>
         </div>
+
+        <script>
+            function handleCheckboxChange(checkbox, parameterId) {
+                // Get the hidden input field
+                const nullInput = document.getElementById('par_' + parameterId + '_null');
+
+                if (checkbox.checked) {
+                    // If checkbox is checked, remove the hidden input field value for 'null'
+                    nullInput.value = '';
+                } else {
+                    // If checkbox is unchecked, set the hidden input field to 'null'
+                    nullInput.value = 'null';
+                }
+            }
+        </script>
+
+
+
         <div class='col-md-12'>
 
             <div class="card">
@@ -324,11 +429,11 @@
                                 {{-- City --}}
                                 <div class="col-md-12 col-12 form-group mandatory">
                                     {{ Form::label('city', __('City'), ['class' => 'form-label col-12 ']) }}
-                                    {!! Form::hidden('city', isset($list->city) ? $list->city : '', ['class' => 'form-control ', 'id' => 'city']) !!}
+                                    {{-- {!! Form::hidden('city', isset($list->city) ? $list->city : '', ['class' => 'form-control ', 'id' => 'city']) !!}
                                     <input id="searchInput" value="{{ isset($list->city) ? $list->city : '' }}"
                                         class="controls form-control" type="text" placeholder="{{ __('City') }}"
-                                        required>
-                                    {{-- {{ Form::text('city', isset($list->city) ? $list->city : '', ['class' => 'form-control ', 'placeholder' => 'City', 'id' => 'city']) }} --}}
+                                        required> --}}
+                                    {{ Form::text('city', isset($list->city) ? $list->city : '', ['class' => 'form-control ', 'placeholder' => 'City', 'id' => 'city']) }}
                                 </div>
 
                                 {{-- Country --}}
